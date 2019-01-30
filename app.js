@@ -12,7 +12,7 @@ app.use(fileUpload());
 getExtention = (s) => s.slice(s.indexOf('.'));
 //@post     /upload     link upload a file to server
 //@param    file        file to upload
-app.post('/upload', function(req, res) {
+app.post('/upload', (req, res) => {
     if (Object.keys(req.files).length == 0) {
         return res.status(400).send('No files were uploaded.');  
     }
@@ -29,6 +29,7 @@ app.post('/upload', function(req, res) {
   }
 );
 //serve public folder for web app
+//built app will be placed here
 app.use(express.static('public'));
 //@get /files/* to download files
 app.use('/files',express.static('uploads'));
