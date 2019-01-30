@@ -1,6 +1,6 @@
 import {LOGIN} from './constants';
 
-export const login = () => dispatch => {
+export const login = () =>  {
     return {
         type : LOGIN 
     }
