@@ -16,12 +16,27 @@ var UserSchema = Schema({
     name:{
         type:String
     },
+    bio:{
+        type:String
+    },
+    avatar:{
+        large:{
+            type:String
+        },
+        small:{
+            type:String
+        }
+    },
     role:{
          type:String,
          required: true,
-         default: 'guest' 
+         default: 'student' 
         //  default: 'admin' 
      },
+     isOnline:{
+         type:Boolean,
+         default:false
+     }
 });
 
 var User = module.exports = mongoose.model('User',UserSchema);
@@ -45,7 +60,7 @@ module.exports.getUserById = function(id, callback){
 
 module.exports.comparePassword = function(candidatePassword, hash, callback){
     bcrypt.compare(candidatePassword, hash, function(err, isMatch) {
-        if(err) throw err;
+        if(err) callback(err, false);
         callback(null, isMatch);
     });
 };

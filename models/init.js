@@ -1,5 +1,5 @@
 // database connection
-
+const mongoose = require('mongoose');
 const log = require('../log/log');
 
 const db = require('../config').db_url;
