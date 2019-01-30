@@ -12,7 +12,7 @@ const log = require('../log/log');
     group chats
 *********************************/
 connectionListener = (client)=> {
-    log.info(`new socket connected: ${client.info}`);
+    log.info(`new socket connected: ${client.id}`);
 };
 
 module.exports = connectionListener;
