@@ -4,8 +4,12 @@
   "description": "advisor.co backend and webapp",
   "main": "app.js",
   "scripts": {
-    "test": "node app",
-    "dev_server": "nodemon app"
+    "test": "node server",
+    "server": "nodemon server",
+    "client": "npm run start --prefix client",
+    "client-install": "npm run install --prefix client",
+    "client-build": "npm run build --prefix client",
+    "dev": "concurrently \"npm run server\"  \"npm run client\" "
   },
   "keywords": [
     "socket.io",
@@ -16,6 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "concurrently": "^4.1.0",
     "express": "^4.16.4",
     "express-fileupload": "^1.1.1-alpha.1",
     "mongoose": "^5.4.7",

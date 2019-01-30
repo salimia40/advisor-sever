@@ -36,6 +36,7 @@ app.use('/files',express.static('uploads'));
 //start listening to socket
 io.on( "connection",connectionListener);
 //start server
-http.listen(3000, function(){
-  log.info('listening on port:  3000');
+const port = require('./config').port; 
+http.listen(port, function(){
+  log.info(`listening on port:  ${port}`);
 });
