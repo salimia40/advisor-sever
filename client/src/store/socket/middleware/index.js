@@ -75,7 +75,7 @@ const socketMiddleware = store => {
         switch (action.type){
 
             case CONNECT_SOCKET:
-                // socket.connect(messageState.user, socketState.port);
+                socket.connect(socketState.port);
                 break;
 
             case DISCONNECT_SOCKET:
