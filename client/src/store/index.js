@@ -1,9 +1,23 @@
 import {createStore, applyMiddleware , compose} from 'redux';
 import thunk from 'redux-thunk';
-import RootReducer from './reducers';
+import {combineReducers} from 'redux';
+
+//reducers
+import userReducer from './user/reducer';
+import statusReducer from './status/reducer';
+
+
+//middlewares
+import socketMiddleware from './socket/middleware';
+
+const RootReducer = combineReducers({
+    userState: userReducer,
+    statusState: statusReducer,
+});
+
 
 const initialState = {};
-const middlewares = [thunk];
+const middlewares = [socketMiddleware,thunk];
 
 const store = createStore(RootReducer,initialState,compose(
     applyMiddleware(...middlewares),

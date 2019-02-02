@@ -4,7 +4,7 @@ const User = require('../models/user');
 /*********************************
  TODO list:
     simple Login and register for advisors
-    add email confirmation and password recovery
+    // add email confirmation and password recovery
     student creation and management function for advisors
     post and comment that advisors can create posts and sudents resive their adisor's post and both can comment
     student information updates
@@ -28,7 +28,7 @@ const login = (client,data) => {
                 user.isOnline = true;
                 user.save();
                 users.set(client.id,user);
-                log.info(`user logged in:   ${client.id}    ${user}`)
+                log.info(`user registered:   ${client.id}    ${user}`);
                 return  client.emit(LOGIN,{success:true,message:'login successful',user:user});
             }
         });
@@ -37,7 +37,26 @@ const login = (client,data) => {
 
 const REGISTER = 'REGISTER';
 const register = (client,data) => {
-
+    log.info(`a register attempt ${data}`);
+    let username = data.username; 
+    let email = data.email; 
+    let password = data.password; 
+    let role = data.role; 
+    let name = data.name;
+    
+    let user = new User();
+    user.username = username;
+    user.email = email;
+    user.password = password;
+    user.name = name;
+    user.role = role;
+    User.createUser(user,(newUser)=>{
+        newUser.isOnline = true;
+        newUser.save();
+        newUser.set(client.id,user);
+        log.info(`user logged in:   ${client.id}    ${newUser}`);
+        client.emit(REGISTER,{success:true,user:newUser});
+    })
 }
 
 const disconnect = (client) => {

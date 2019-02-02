@@ -5,6 +5,7 @@ import { connect } from './socket/connection';
 
 import { Provider } from 'react-redux';
 import store from './store';
+import AppNavBar from './components/AppNavBar';
 
 class App extends Component {
 
@@ -13,7 +14,7 @@ class App extends Component {
     return (
       <Provider store={store}>
         <div className="App">
-          hi there
+          <AppNavBar></AppNavBar>
         </div>
       </Provider>
     );
