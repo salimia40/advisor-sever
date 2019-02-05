@@ -35,9 +35,10 @@ const login = (client,data) => {
     })
 }
 
-const REGISTER = 'REGISTER';
+const REGISTER = 'register';
 const register = (client,data) => {
-    log.info(`a register attempt ${data}`);
+    log.info(`a register attempt ${data.data}`);
+    
     let username = data.username; 
     let email = data.email; 
     let password = data.password; 
@@ -50,7 +51,11 @@ const register = (client,data) => {
     user.password = password;
     user.name = name;
     user.role = role;
-    User.createUser(user,(newUser)=>{
+
+    log.info(`a register attempt ${user}`);
+    
+    User.createUser(user,(err,newUser)=>{
+        if (err)  log.info(`user error:   ${err.message}`);
         newUser.isOnline = true;
         newUser.save();
         newUser.set(client.id,user);

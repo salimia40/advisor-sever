@@ -1,5 +1,5 @@
 // ACTIONS
-import { STATUS_CHANGED } from '../actions';
+import { STATUS_CHANGED } from '../../actions';
 
 // CONSTANTS
 import { UI } from '../../../constants';

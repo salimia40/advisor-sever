@@ -1,23 +1,25 @@
 
 import Socket from "./Socket";
-import {statusChanged} from "../../status/actions";
-import * as UI from "../../../constants/UI";
+import { statusChanged } from "../../status/actions";
+
 import {
     connectionChanged,
     CONNECT_SOCKET,
-    DISCONNECT_SOCKET
-} from "../actions";
-import {
-    clientUpdateReceived,
-    messageReceived,
-    recipientChanged,
-    messageSent,
-    SEND_MESSAGE
-} from "../../message/actions";
+    DISCONNECT_SOCKET,
+} from "../../actions";
+import { login } from "../../user/actions";
+import { Protocol } from "../../../constants";
+
 
 const socketMiddleware = store => {
 
+    console.log('middleware')
     // The socket's connection state changed
+
+    const onLogin = (userInfo) => {
+        store.dispatch(login(userInfo))
+    }
+
     const onConnectionChange = isConnected => {
         store.dispatch(connectionChanged(isConnected));
         store.dispatch(statusChanged(isConnected ? 'Connected' : 'Disconnected'));
@@ -26,70 +28,33 @@ const socketMiddleware = store => {
     // There has been a socket error
     const onSocketError = (status) => store.dispatch(statusChanged(status, true));
 
-    // The client has received a message
-    const onIncomingMessage = message => store.dispatch(messageReceived(message));
-
     // The server has updated us with a list of all users currently on the system
-    const onUpdateClient = message => {
-
-        const messageState = store.getState().messageState;
-
-        // Remove this user from the list
-        const otherUsers = message.list.filter(user => user !== messageState.user);
-
-        // Has our recipient disconnected?
-        const recipientLost = messageState.recipient !== UI.NO_RECIPIENT && !(message.list.find(user => user === messageState.recipient));
-
-        // Has our previously disconnected recipient reconnected?
-        const recipientFound = !!messageState.lostRecipient && !!message.list.find(user => user === messageState.lostRecipient);
-
-        const dispatchUpdate = () => {
-            store.dispatch(clientUpdateReceived(otherUsers, recipientLost));
-        };
-
-        if (recipientLost && !messageState.recipientLost) { // recipient just now disconnected
-            store.dispatch(statusChanged(`${messageState.recipient} ${UI.RECIPIENT_LOST}`, true));
-            dispatchUpdate();
-        } else if (recipientFound) { // previously lost recipient just reconnected
-            store.dispatch(statusChanged(`${messageState.lostRecipient} ${UI.RECIPIENT_FOUND}`));
-            dispatchUpdate();
-            store.dispatch(recipientChanged(messageState.lostRecipient));
-        } else {
-            dispatchUpdate();
-        }
-    };
-
+    
     const socket = new Socket(
+        onLogin,
         onConnectionChange,
-        onSocketError,
-        onIncomingMessage,
-        onUpdateClient
+        onSocketError
     );
 
     // Return the handler that will be called for each action dispatched
-    return next => action => {
+    return  next => action => {
 
-        // const messageState = store.getState().messageState;
-        const socketState = store.getState().socketState;
+        console.log('next is going on')
 
-        switch (action.type){
+
+        switch (action.type) {
+
+            case Protocol.DO_REGISTER:
+                console.log('caling register method')
+                socket.register(action.user);
+                break;
 
             case CONNECT_SOCKET:
-                socket.connect(socketState.port);
+                socket.connect(5000);
                 break;
 
             case DISCONNECT_SOCKET:
                 socket.disconnect();
-                break;
-
-            case SEND_MESSAGE:
-                // socket.sendIm({
-                //     'from': messageState.user,
-                //     'to': messageState.recipient,
-                //     'text': action.message,
-                //     'forwarded': false
-                // });
-                store.dispatch(messageSent());
                 break;
 
             default:

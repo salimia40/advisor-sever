@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from 'reactstrap';
-import { register } from '../store/user/actions';
+import { register } from '../store/actions';
 import { connect } from 'react-redux';
 
 class RegisterModal extends React.Component {
@@ -33,7 +33,7 @@ class RegisterModal extends React.Component {
             role: this.state.role,
         };
 
-        register(user);
+        this.props.register(user);
     }
 
 
@@ -95,4 +95,17 @@ class RegisterModal extends React.Component {
     
 }
 
-export default connect(register)(RegisterModal);
+const mapStateToProps = (state) => ({
+    userState: state.userState
+})
+
+const mapDispatchToProps = dispatch => {
+    return {
+      register: user => {
+        dispatch(register(user))
+      }
+    }
+  }
+  
+
+export default connect(mapStateToProps,mapDispatchToProps)(RegisterModal);

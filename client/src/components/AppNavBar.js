@@ -12,8 +12,8 @@ import {
     NavLink,
     Button
 } from 'reactstrap';
-import RegisterModal from './RegisterModal';
-import LoginModal from './LoginModal';
+import RegisterModal from './modals/RegisterModal';
+import LoginModal from './modals/LoginModal';
 
 class AppNavBar extends React.Component {
     constructor(props) {
@@ -30,7 +30,7 @@ class AppNavBar extends React.Component {
         });
     }
     render() {
-        let loggedin = this.props.user.loggedIn;
+        let loggedin = this.props.userState.loggedIn;
         loggedin = false;
         return (
             <div>
@@ -61,11 +61,11 @@ class AppNavBar extends React.Component {
 }
 
 AppNavBar.propTypes = {
-    user: PropTypes.object.isRequired
+    userState: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-    user: state.user
+    userState: state.userState
 })
 
 export default connect(mapStateToProps)(AppNavBar);

@@ -1,6 +1,6 @@
 import {createStore, applyMiddleware , compose} from 'redux';
 import {combineReducers} from 'redux';
-
+import thunk from 'redux-thunk';
 //reducers
 import userReducer from './user/reducer';
 import statusReducer from './status/reducer';
@@ -14,14 +14,15 @@ const RootReducer = combineReducers({
     statusState: statusReducer,
 });
 
-
 const initialState = {};
-const middlewares = [socketMiddleware];
+const middlewares = [thunk,socketMiddleware];
 
 const store = createStore(RootReducer,initialState,compose(
     applyMiddleware(...middlewares),
     // only in dev mod for redux plugin
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()    
 ));
+
+console.log(store.dispatch({type:'lol'}))
 
 export default store;

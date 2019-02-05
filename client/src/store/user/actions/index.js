@@ -1,15 +1,15 @@
-import {LOGIN} from './constants';
+import {Protocol} from '../../../constants';
 
-import {Register} from '../socket/connection';
-
-export const login = () =>  {
+export const login = (user) =>  {
     return {
-        type : LOGIN 
+        type : Protocol.LOGIN,
+        user : user
     }
 }
 
 export const register = (user) => {
     return {
-        type : LOGIN 
+        type : Protocol.DO_REGISTER,
+        user : user
     }
 }

@@ -3,12 +3,10 @@ import io from 'socket.io-client';
 
 export default class Socket {
 
-
-    constructor(onChange, onSocketError, onMessage, onUpdateClient) {
+    constructor( onLogin,onChange, onSocketError) {
+        this.onLogin = onLogin;
         this.onChange = onChange;
         this.onSocketError = onSocketError;
-        this.onMessage = onMessage;
-        this.onUpdateClient = onUpdateClient;
         this.socket = null;
         this.user = null;
         this.port = null;
@@ -24,7 +22,9 @@ export default class Socket {
         this.socket = io.connect(host);
 
         // Set listeners
+        
         this.socket.on(Protocol.CONNECT, this.onConnected);
+        this.socket.on(Protocol.LOGIN, this.onLogin);
         this.socket.on(Protocol.DISCONNECT, this.onDisconnected);
         this.socket.on(Protocol.CONNECT_ERR, this.onError);
         this.socket.on(Protocol.RECONNECT_ERR, this.onError);
@@ -32,9 +32,8 @@ export default class Socket {
 
     // Received connect event from socket
     onConnected = () => {
+        console.log("connected")
         this.sendIdent();
-        this.socket.on(Protocol.IM, this.onMessage);
-        this.socket.on(Protocol.UPDATE_CLIENT, this.onUpdateClient);
         this.onChange(true);
     };
 
@@ -56,5 +55,11 @@ export default class Socket {
         this.onSocketError(message);
         this.disconnect();
     };
+
+    register = user => {
+        this.connect();
+        console.log('sending register   '+ user);
+        this.socket.emit(Protocol.REGISTER,user);
+    }
 
 }
