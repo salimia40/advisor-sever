@@ -1,6 +1,7 @@
 const mongoose = require('./init');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
+const log = require('../log/log');
 
 var UserSchema = Schema({
     username: {
@@ -21,12 +22,7 @@ var UserSchema = Schema({
         type: String
     },
     avatar: {
-        large: {
             type: String
-        },
-        small: {
-            type: String
-        }
     },
     role: {
         type: String,
@@ -44,6 +40,7 @@ var User = module.exports = mongoose.model('User', UserSchema);
 
 module.exports.createUser = function (newUser, callback) {
     bcrypt.genSalt(10, function (err, salt) {
+
         bcrypt.hash(newUser.password, salt, function (err, hash) {
             newUser.password = hash;
             newUser.save(callback);
@@ -67,24 +64,23 @@ module.exports.comparePassword = function (candidatePassword, hash, callback) {
     });
 };
 
-module.exports.changePassword = function (uid, candidatePassword, newPassword, callback) {
-    User.findById(uid)
-        .then(user => {
-            bcrypt.compare(candidatePassword, user.password, function (err, isMatch) {
-                if (err) return callback({ success: false });
+module.exports.changePassword = function (user, password, newPassword, callback) {
+    
+            bcrypt.compare(password, user.password, function (err, isMatch) {
+                if (err) return callback({ success: false ,message:'failed to change password'});
                 if (isMatch) {
                     bcrypt.genSalt(10, function (err, salt) {
-                        if (err) return callback({ success: false });
+                        if (err) return callback({ success: false ,message:'failed to change password'});
                         bcrypt.hash(newPassword, salt, function (err, hash) {
-                            if (err) return callback({ success: false });
+                            if (err) return callback({ success: false ,message:'failed to change password' });
                             user.password = hash;
-                            user.save((err, user) => {
-                                if (err) return callback({ success: false });
-                                else return callback({ success: true, user: user });
+                            user.save((err, newuser) => {
+                                if (err) return callback({ success: false ,message:'failed to change password' });
+                                else return callback({ success: true, user: newuser ,message:'password changed successfully'});
                             });
                         });
                     });
-                } else return callback({ success: false });
+                } else return callback({ success: false ,message:'incurrect password'});
             });
-        })
+        
 };

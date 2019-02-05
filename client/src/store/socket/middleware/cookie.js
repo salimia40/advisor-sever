@@ -1,11 +1,19 @@
-export const setCookie = (cname, cvalue, exdays = 60) => {
+export default class Cookie {
+
+  constructor (){
+    this.username = null;
+    this.password = null;
+  }
+
+
+ setCookie = (cname, cvalue, exdays = 60) => {
     var d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     var expires = "expires="+d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
   }
   
-  export const getCookie = (cname) => {
+   getCookie = (cname) => {
     var name = cname + "=";
     var ca = document.cookie.split(';');
     for(var i = 0; i < ca.length; i++) {
@@ -20,7 +28,19 @@ export const setCookie = (cname, cvalue, exdays = 60) => {
     return "";
   }
   
-  export const checkCookie = () => {
-    var user = getCookie("username");
-    return (user !== "");
+   checkCookie = () => {
+    var cvalue = getCookie("username");
+    return (cvalue !== "");
   }
+
+  setTempUser = (username,password) => {
+    this.username = username;
+    this.password = password;
+  }
+
+  saveTempUser = () => {
+    setCookie('username', username);
+    setCookie('password', password);
+  }
+
+}

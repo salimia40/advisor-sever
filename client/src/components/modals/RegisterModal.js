@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from 'reactstrap';
-import { register } from '../store/actions';
+import { register } from '../../store/actions';
 import { connect } from 'react-redux';
 
 class RegisterModal extends React.Component {
@@ -90,13 +90,10 @@ class RegisterModal extends React.Component {
                 </Modal>
             </div>
         );
-    }
-
-    
+    }   
 }
 
 const mapStateToProps = (state) => ({
-    userState: state.userState
 })
 
 const mapDispatchToProps = dispatch => {

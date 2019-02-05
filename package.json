@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "node server",
-    "server": "nodemon server",
+    "server": "nodemon server ",
     "client": "npm run start --prefix client",
     "client-install": "npm run install --prefix client",
     "client-build": "npm run build --prefix client",

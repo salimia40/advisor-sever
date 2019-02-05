@@ -1,12 +1,4 @@
-// Socket related actions
-export const CONNECTION_CHANGED = 'socket/connection-changed';
-export const PORT_CHANGED       = 'socket/port-changed';
-export const CONNECT_SOCKET            = 'socket/connect';
-export const DISCONNECT_SOCKET         = 'socket/disconnect';
-export const STATUS_CHANGED         = 'status/status-changed';
-
-import {Protocol} from '../../../constants';
-
+import {Protocol} from '../../constants';
 
 // The socket's connection state changed
 export const connectionChanged = isConnected => {
@@ -16,7 +8,6 @@ export const connectionChanged = isConnected => {
         isError: false
     };
 };
-
 
 // The user clicked the connect button
 export const connectSocket = () => {
@@ -32,7 +23,7 @@ export const disconnectSocket = () => {
     };
 }
 
-export const statusChanged = (status,isError) => {
+export const statusChanged = (status,isError = false) => {
     return {
         type: Protocol.STATUS_CHANGED,
         status: status,
@@ -48,9 +39,16 @@ export const login = (user) =>  {
     }
 }
 
+export const onLogin = (user) =>  {
+    return {
+        type : Protocol.ON_LOGIN,
+        user : user,
+    }
+}
+
 export const register = (user) => {
     return {
-        type : Protocol.DO_REGISTER,
+        type : Protocol.REGISTER,
         user : user
     }
 }

@@ -4,6 +4,7 @@ import thunk from 'redux-thunk';
 //reducers
 import userReducer from './user/reducer';
 import statusReducer from './status/reducer';
+import socketReducer from './socket/reducer';
 
 
 //middlewares
@@ -12,6 +13,7 @@ import socketMiddleware from './socket/middleware';
 const RootReducer = combineReducers({
     userState: userReducer,
     statusState: statusReducer,
+    socketState: socketReducer
 });
 
 const initialState = {};
@@ -22,7 +24,5 @@ const store = createStore(RootReducer,initialState,compose(
     // only in dev mod for redux plugin
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()    
 ));
-
-console.log(store.dispatch({type:'lol'}))
 
 export default store;

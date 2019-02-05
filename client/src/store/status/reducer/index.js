@@ -1,5 +1,5 @@
 // ACTIONS
-import { STATUS_CHANGED } from '../../actions';
+import { Protocol } from '../../../constants';
 
 // CONSTANTS
 import { UI } from '../../../constants';
@@ -15,7 +15,7 @@ function statusReducer(state=INITIAL_STATE, action) {
     let reduced;
     switch (action.type)
     {
-        case STATUS_CHANGED:
+        case Protocol.STATUS_CHANGED:
             reduced = Object.assign({}, state, {
                 status: String(action.status),
                 isError: action.isError

@@ -1,59 +1,74 @@
-
 import Socket from "./Socket";
-import { statusChanged } from "../../status/actions";
-
-import {
-    connectionChanged,
-    CONNECT_SOCKET,
-    DISCONNECT_SOCKET,
-} from "../../actions";
-import { login } from "../../user/actions";
+import * as Actions from '../../actions'
 import { Protocol } from "../../../constants";
-
+import Cookie from './cookie';
 
 const socketMiddleware = store => {
 
-    console.log('middleware')
     // The socket's connection state changed
+    const cookie = new Cookie();
 
-    const onLogin = (userInfo) => {
-        store.dispatch(login(userInfo))
+    const onLogin = (result) => {
+        if (result.s) {
+            Cookie.saveTempUser();
+            store.dispatch(Actions.onLogin(result.user));
+        }
+        store.dispatch(Actions.statusChanged(result.message, result.success));
+        console.log(`login response`)
+        console.log(`login response: ${result.success}`)
+        console.log(`login response: ${result.message}`)
+        console.log(`login response: ${result.user}`)
+        console.log(`cookie: ${cookie.getCookie('username')}`)
+        console.log(`cookie: ${cookie.getCookie('password')}`)
     }
 
     const onConnectionChange = isConnected => {
-        store.dispatch(connectionChanged(isConnected));
-        store.dispatch(statusChanged(isConnected ? 'Connected' : 'Disconnected'));
+        store.dispatch(Actions.connectionChanged(isConnected));
+        store.dispatch(Actions.statusChanged(isConnected ? 'Connected' : 'Disconnected'));
     };
 
     // There has been a socket error
-    const onSocketError = (status) => store.dispatch(statusChanged(status, true));
+    const onSocketError = (status) => store.dispatch(Actions.statusChanged(status, true));
 
-    // The server has updated us with a list of all users currently on the system
-    
+    // Received connect event from socket
+    const onConnected = () => {
+        // retrive login info from cookie if any anf attempt login
+        if (cookie.checkCookie('username') && cookie.checkCookie('password')) {
+            let user = {
+                username: cookie.getCookie('username'),
+                password: cookie.getCookie('password'),
+            }
+            store.dispatch(Actions.login(user));
+        }
+    };
+
     const socket = new Socket(
         onLogin,
         onConnectionChange,
-        onSocketError
+        onSocketError,
+        onConnected
     );
 
     // Return the handler that will be called for each action dispatched
-    return  next => action => {
-
-        console.log('next is going on')
-
+    return next => action => {
 
         switch (action.type) {
 
-            case Protocol.DO_REGISTER:
-                console.log('caling register method')
+            case Protocol.LOGIN:
+                cookie.setTempUser(action.user.username, action.user.password);
+                socket.login(action.user);
+                break;
+
+            case Protocol.REGISTER:
+                cookie.setTempUser(action.user.username, action.user.password);
                 socket.register(action.user);
                 break;
 
-            case CONNECT_SOCKET:
-                socket.connect(5000);
+            case Protocol.CONNECT_SOCKET:
+                socket.connect();
                 break;
 
-            case DISCONNECT_SOCKET:
+            case Protocol.DISCONNECT_SOCKET:
                 socket.disconnect();
                 break;
 

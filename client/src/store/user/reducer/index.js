@@ -1,17 +1,20 @@
 import { Protocol } from '../../../constants';
 const initialState = {
     loggedIn: false,
+    user: null,
 }
 
 export default (state = initialState, action) => {
+    let reduced;
     switch (action.type) {
-        case Protocol.LOGIN:
-            state.loggedIn = true;
-            return { ...state };
-        case Protocol.REGISTER:
-            console.log('registered')
-            state.loggedIn = true;
-            return { ...state };
-        default: return { ...state };
+        case Protocol.ON_LOGIN:
+            reduced = Object.assign({}, state, {
+                loggedIn: true,
+                user: action.user
+            })
+
+            break;
+        default: reduced = state;
     }
+    return reduced;
 }

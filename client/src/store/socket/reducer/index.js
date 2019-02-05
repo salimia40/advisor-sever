@@ -1,5 +1,5 @@
 // ACTIONS
-import { CONNECTION_CHANGED } from '../../actions';
+import { Protocol } from '../../../constants';
 
 // Initial state
 const INITIAL_STATE = {
@@ -12,7 +12,7 @@ function socketReducer(state=INITIAL_STATE, action) {
     let reduced;
     switch (action.type)
     {
-        case CONNECTION_CHANGED:
+        case Protocol.CONNECTION_CHANGED:
             reduced = Object.assign({}, state, {
                 connected: action.connected,
                 isError: false
