@@ -36,6 +36,7 @@ app.post('/upload', (req, res) => {
 app.use(express.static('public'));
 //@get /files/* to download files
 app.use('/files',express.static('uploads'));
+app.use('/log',express.static( __dirname + '/log/'));
 //start listening to socket
 io.on( "connection",connectionListener);
 //start server

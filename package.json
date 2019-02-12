@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "advisor.co backend and webapp",
   "main": "app.js",
+  "engines": {
+    "node" :"v10.15.0"
+  },
   "scripts": {
     "test": "node server",
     "server": "nodemon server ",

@@ -21,14 +21,22 @@ var UserSchema = Schema({
     bio: {
         type: String
     },
+    advisorId: {
+        type: Schema.ObjectId
+    },
     avatar: {
+        small: {
             type: String
+        },
+        large: {
+            type: String
+        }
     },
     role: {
         type: String,
         required: true,
         default: 'student'
-        //  default: 'admin' 
+        //  default: 'advisor'
     },
     isOnline: {
         type: Boolean,
@@ -49,7 +57,7 @@ module.exports.createUser = function (newUser, callback) {
 };
 
 module.exports.getUserByUsername = function (username, callback) {
-    var query = { username: username };
+    var query = {username: username};
     User.findOne(query, callback);
 };
 
@@ -65,22 +73,22 @@ module.exports.comparePassword = function (candidatePassword, hash, callback) {
 };
 
 module.exports.changePassword = function (user, password, newPassword, callback) {
-    
-            bcrypt.compare(password, user.password, function (err, isMatch) {
-                if (err) return callback({ success: false ,message:'failed to change password'});
-                if (isMatch) {
-                    bcrypt.genSalt(10, function (err, salt) {
-                        if (err) return callback({ success: false ,message:'failed to change password'});
-                        bcrypt.hash(newPassword, salt, function (err, hash) {
-                            if (err) return callback({ success: false ,message:'failed to change password' });
-                            user.password = hash;
-                            user.save((err, newuser) => {
-                                if (err) return callback({ success: false ,message:'failed to change password' });
-                                else return callback({ success: true, user: newuser ,message:'password changed successfully'});
-                            });
-                        });
+
+    bcrypt.compare(password, user.password, function (err, isMatch) {
+        if (err) return callback({success: false, message: 'failed to change password'});
+        if (isMatch) {
+            bcrypt.genSalt(10, function (err, salt) {
+                if (err) return callback({success: false, message: 'failed to change password'});
+                bcrypt.hash(newPassword, salt, function (err, hash) {
+                    if (err) return callback({success: false, message: 'failed to change password'});
+                    user.password = hash;
+                    user.save((err, newuser) => {
+                        if (err) return callback({success: false, message: 'failed to change password'});
+                        else return callback({success: true, user: newuser, message: 'password changed successfully'});
                     });
-                } else return callback({ success: false ,message:'incurrect password'});
+                });
             });
-        
+        } else return callback({success: false, message: 'incurrect password'});
+    });
+
 };

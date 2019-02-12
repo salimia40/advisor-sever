@@ -16,7 +16,7 @@ const Protocol = require('./protocol');
 const users = new Map();
 
 const login = (client,data) => {
-    log.info(`new login attempt by ${client.id} data: ${data}`)
+    log.info(`new login attempt by ${client.id} data: ${data}`);
     let username = data.username;
     let password = data.password;
 
@@ -34,27 +34,26 @@ const login = (client,data) => {
             }
         });
     })
-}
+};
+
+const createInfoRecord = (user) => {
+  // todo
+};
 
 
 const register = (client,data) => {
     log.info(`a register attempt from client:   ${client.id}`);
-    
-    let username = data.username; 
-    let email = data.email; 
-    let password = data.password; 
-    let role = data.role; 
-    let name = data.name;
-    
+
     let user = new User();
-    user.username = username;
-    user.email = email;
-    user.password = password;
-    user.name = name;
-    user.role = role;
+    user.username = data.username;
+    user.email = data.email;
+    user.password = data.password;
+    user.name = data.name;
+    user.role = data.role;
+    user.advisorId = data.advisorId;
 
     log.info(`a register attempt ${user}`);
-    User.getUserByUsername(username,(err,existingUser) =>{
+    User.getUserByUsername(data.username,(err,existingUser) =>{
         if (err) return client.emit(Protocol.LOGIN,{success:false,message:'database error'}); 
         if (existingUser) return client.emit(Protocol.LOGIN,{success:false,message:'user already exists'});
         else {
@@ -66,12 +65,13 @@ const register = (client,data) => {
                 newUser.isOnline = true;
                 newUser.save();
                 users.set(client.id,user);
-                log.info(`user logged in:   ${client.id}    ${newUser}`);
+                log.info(`user logged in:   ${client.id} ${newUser}`);
                 client.emit(Protocol.LOGIN,{success:true,user:newUser,message:'user created and logged in'});
+                createInfoRecord(newUser);
             })
         }
     });
-}
+};
 
 const disconnect = (client) => {
     if(users.has(client.id)){
@@ -82,7 +82,7 @@ const disconnect = (client) => {
         users.delete(client.id);
     }
     log.info(`client disconnected:  ${client.id}`);
-}
+};
 
 const updateEmail = (client,data) => {
     let user = users.get(client.id);
@@ -90,7 +90,7 @@ const updateEmail = (client,data) => {
     user.save((err,newUser)=>{
         client.emit(Protocol.UPDATE_USER,{user:newUser,message:"email updated"});
     })
-}
+};
 
 const updateName = (client,data) => {
     let user = users.get(client.id);
@@ -98,7 +98,7 @@ const updateName = (client,data) => {
     user.save((err,newUser)=>{
         client.emit(Protocol.UPDATE_USER,{user:newUser,message:"nae updated"});
     })
-}
+};
 
 const updateBio = (client,data) => {
     let user = users.get(client.id);
@@ -106,7 +106,7 @@ const updateBio = (client,data) => {
     user.save((err,newUser)=>{
         client.emit(Protocol.UPDATE_USER,{user:newUser,message:"bio updated"});
     })
-}
+};
 
 const updateAvatar = (client,data) => {
     let user = users.get(client.id);
@@ -114,22 +114,22 @@ const updateAvatar = (client,data) => {
     user.save((err,newUser)=>{
         client.emit(Protocol.UPDATE_USER,{user:newUser,message:"avatar updated"});
     })
-}
+};
 
 const changePassword = (client,data) => {
     let user = users.get(client.id);
     User.changePassword(user,data.password,data.newPassword,(res) => {
         client.emit(Protocol.CHANGE_PASSWORD,res);
-        if(success) users.set(client.id,res.user);
+        if(res.success) users.set(client.id,res.user);
     })
-}
+};
 
 const logout = (client) => {
     let user = users.get(client.id);
     user.isOnline = false;
     user.save();
     users.delete(client.id);
-}
+};
 
 connectionListener = (client)=> {
     log.info(`new client connected: ${client.id}`);
