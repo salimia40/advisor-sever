@@ -927,3 +927,9 @@
   name: 'samuel tarley',
   __v: 0 }
   info:    2019-2-9 11:11:38     client disconnected:  kgDoV9bITo9QzVKYAAAB
+
+  info:    2019-2-12 12:20:55     listening on port:  5000
+  warn:    2019-2-12 12:20:56     Authentication failed.
+
+  info:    2019-2-12 12:24:03     listening on port:  5000
+  warn:    2019-2-12 12:24:04     Authentication failed.
