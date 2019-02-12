@@ -29,7 +29,7 @@ export default class Cookie {
   }
   
    checkCookie = () => {
-    var cvalue = getCookie("username");
+    var cvalue = this.getCookie("username");
     return (cvalue !== "");
   }
 
@@ -39,8 +39,8 @@ export default class Cookie {
   }
 
   saveTempUser = () => {
-    setCookie('username', username);
-    setCookie('password', password);
+    this.setCookie('username', this.username);
+    this.setCookie('password', this.password);
   }
 
 }

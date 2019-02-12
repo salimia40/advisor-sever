@@ -5,6 +5,7 @@ import thunk from 'redux-thunk';
 import userReducer from './user/reducer';
 import statusReducer from './status/reducer';
 import socketReducer from './socket/reducer';
+import navReducer from './navigation/reducer';
 
 
 //middlewares
@@ -13,7 +14,8 @@ import socketMiddleware from './socket/middleware';
 const RootReducer = combineReducers({
     userState: userReducer,
     statusState: statusReducer,
-    socketState: socketReducer
+    socketState: socketReducer,
+    navState: navReducer,
 });
 
 const initialState = {};

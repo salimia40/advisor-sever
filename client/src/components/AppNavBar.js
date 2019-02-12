@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { logout } from '../store/actions';
 import PropTypes from 'prop-types';
 
 import {
@@ -20,6 +21,7 @@ class AppNavBar extends React.Component {
         super(props);
 
         this.toggle = this.toggle.bind(this);
+        this.logout = this.logout.bind(this);
         this.state = {
             isOpen: false
         };
@@ -29,19 +31,25 @@ class AppNavBar extends React.Component {
             isOpen: !this.state.isOpen
         });
     }
+
+    logout() {
+        console.log(this.props)
+        this.props.logout();
+    }
+    
+
     render() {
         let loggedin = this.props.userState.loggedIn;
-        loggedin = false;
         return (
             <div>
-                <Navbar color="light" light expand="md">
+                <Navbar expand="md">
                     <NavbarBrand href="/">Advisor</NavbarBrand>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
                             {loggedin &&
                                 <NavItem>
-                                    <NavLink ><Button color="danger" >Logout</Button></NavLink>
+                                    <NavLink onClick={this.logout}><Button color="dark" >Logout</Button></NavLink>
                                 </NavItem>}
                             {!loggedin &&
                                 <NavItem>
@@ -49,7 +57,7 @@ class AppNavBar extends React.Component {
                                 </NavItem>}
                             {!loggedin &&
                                 <NavItem>
-                                     <NavLink ><RegisterModal/></NavLink> 
+                                     <NavLink><RegisterModal/></NavLink> 
                                     
                                 </NavItem>}
                         </Nav>
@@ -61,11 +69,17 @@ class AppNavBar extends React.Component {
 }
 
 AppNavBar.propTypes = {
-    userState: PropTypes.object.isRequired
+    userState: PropTypes.object.isRequired,
+    logout: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({
     userState: state.userState
 })
 
-export default connect(mapStateToProps)(AppNavBar);
+const mapDispatchToProps = (dispatch) => ({
+    logout: () => dispatch(logout()),
+})
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(AppNavBar);

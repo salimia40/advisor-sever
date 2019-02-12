@@ -13,9 +13,11 @@ getExtention = (s) => s.slice(s.indexOf('.'));
 //@post     /upload     link upload a file to server
 //@param    file        file to upload
 app.post('/upload', (req, res) => {
+  
     if (Object.keys(req.files).length == 0) {
         return res.status(400).send('No files were uploaded.');  
     }
+  
     let file = req.files.file;
     
     log.info(`new file uploaded to server:      ${file.name}`)
@@ -26,6 +28,7 @@ app.post('/upload', (req, res) => {
         return res.status(500).send(err);
         res.json({success : true, name : name});
     });
+  
   }
 );
 //serve public folder for web app

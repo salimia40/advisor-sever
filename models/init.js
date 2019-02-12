@@ -7,5 +7,5 @@ mongoose
     .connect(db,{ useNewUrlParser: true })
     .then(() => { log.info('connected to db') })
     .catch((err) => { log.warn(err.message) });
-
+mongoose.set('useCreateIndex', true);
 module.exports = mongoose;

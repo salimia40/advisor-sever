@@ -12,8 +12,20 @@ export default (state = initialState, action) => {
                 loggedIn: true,
                 user: action.user
             })
-
             break;
+            
+        case Protocol.UPDATE_USER:
+            reduced = Object.assign({}, state, {
+                user: action.user
+            })
+            break;
+        case Protocol.LOGOUT:
+            reduced = Object.assign({}, state, {
+                loggedIn: false,
+                user: null
+            })
+            break;
+
         default: reduced = state;
     }
     return reduced;

@@ -22,7 +22,7 @@ const login = (client,data) => {
 
     User.getUserByUsername(username,(err,user) =>{
         if (err) return client.emit(Protocol.LOGIN,{success:false,message:'user not found'});
-        User.comparePassword(password,User.password,(err,isMatch) => {
+        User.comparePassword(password,user.password,(err,isMatch) => {
             if (err) return client.emit(Protocol.LOGIN,{success:false,message:'incorrect password'});
             if (!isMatch) return client.emit(Protocol.LOGIN,{success:false,message:'incorrect password'});
             if (isMatch) {
@@ -88,7 +88,7 @@ const updateEmail = (client,data) => {
     let user = users.get(client.id);
     user.email = data.email;
     user.save((err,newUser)=>{
-        client.emit(Protocol.UPDATE_USER,newUser);
+        client.emit(Protocol.UPDATE_USER,{user:newUser,message:"email updated"});
     })
 }
 
@@ -96,7 +96,7 @@ const updateName = (client,data) => {
     let user = users.get(client.id);
     user.name = data.name;
     user.save((err,newUser)=>{
-        client.emit(Protocol.UPDATE_USER,newUser);
+        client.emit(Protocol.UPDATE_USER,{user:newUser,message:"nae updated"});
     })
 }
 
@@ -104,7 +104,7 @@ const updateBio = (client,data) => {
     let user = users.get(client.id);
     user.bio = data.bio;
     user.save((err,newUser)=>{
-        client.emit(Protocol.UPDATE_USER,newUser);
+        client.emit(Protocol.UPDATE_USER,{user:newUser,message:"bio updated"});
     })
 }
 
@@ -112,7 +112,7 @@ const updateAvatar = (client,data) => {
     let user = users.get(client.id);
     user.avatar = data.avatar;
     user.save((err,newUser)=>{
-        client.emit(Protocol.UPDATE_USER,newUser);
+        client.emit(Protocol.UPDATE_USER,{user:newUser,message:"avatar updated"});
     })
 }
 
@@ -135,13 +135,25 @@ connectionListener = (client)=> {
     log.info(`new client connected: ${client.id}`);
     client.on(Protocol.LOGIN,(data)=>login(client,data));
     client.on(Protocol.REGISTER,(data)=>register(client,data));
-    client.on(Protocol.UPDATE_EMAIL,(data)=>updateEmail(client,data));
-    client.on(Protocol.UPDATE_AVATAR,(data)=>updateAvatar(client,data));
     client.on(Protocol.UPDATE_BIO,(data)=>updateBio(client,data));
     client.on(Protocol.UPDATE_NAME,(data)=>updateName(client,data));
+    client.on(Protocol.UPDATE_EMAIL,(data)=>updateEmail(client,data));
+    client.on(Protocol.UPDATE_AVATAR,(data)=>updateAvatar(client,data));
     client.on(Protocol.CHANGE_PASSWORD,(data)=>changePassword(client,data));
-    client.on(Protocol.LOGOUT,()=> logout(client));
+    client.on(Protocol.LOGOUT,(ignored)=> logout(client));
     client.on('disconnect',()=> disconnect(client));
 };
 
 module.exports = connectionListener;
+
+
+
+// to get key by value
+// let people = new Map();
+// people.set('1', 'jhon');
+// people.set('2', 'jasmein');
+// people.set('3', 'abdo');
+
+// let jhonKeys = [...people.entries()]
+//         .filter(({ 1: v }) => v === 'jhon')
+//         .map(([k]) => k);

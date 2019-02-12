@@ -77,7 +77,7 @@ class RegisterModal extends React.Component {
         let form = this.getForm();
         return (
             <div>
-                <Button color="primary" onClick={this.toggle}>register</Button>
+                <Button color="dark" onClick={this.toggle}>register</Button>
                 <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
                     <ModalHeader toggle={this.toggle}>Register Form</ModalHeader>
                     <ModalBody>

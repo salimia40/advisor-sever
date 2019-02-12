@@ -1,9 +1,9 @@
 import * as Protocol from './Protocol.js';
-import * as Styles from './Styles.js';
 import * as UI from './UI.js';
+import * as Views from './Views.js';
 
 export {
     Protocol,
-    Styles,
-    UI
+    UI,
+    Views
 };
