@@ -4,10 +4,10 @@
   "description": "advisor.co backend and webapp",
   "main": "server.js",
   "engines": {
-    "node" :"v10.15.0"
+    "node" :"10.15.0"
   },
   "scripts": {
-    "test": "node server",
+    "start": "node server",
     "server": "nodemon server ",
     "client": "npm run start --prefix client",
     "client-install": "npm run install --prefix client",
