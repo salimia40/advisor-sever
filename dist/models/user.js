@@ -1,8 +1,18 @@
-const mongoose = require("./init");
-const bcrypt = require("bcryptjs");
+"use strict";
 
-const Schema = mongoose.Schema;
-const userSchema = new Schema({
+var _group = require("./group");
+
+var _group2 = _interopRequireDefault(_group);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var mongoose = require("./init");
+
+
+var bcrypt = require("bcryptjs");
+
+var Schema = mongoose.Schema;
+var userSchema = new Schema({
     username: {
         type: String,
         required: true,
@@ -22,8 +32,8 @@ const userSchema = new Schema({
         type: String
     },
     advisorId: {
-        type: Schema.Types.ObjectId,
-        // ref: 'userSchema'
+        type: ObjectId,
+        ref: 'userSchema'
     },
     avatar: {
         small: {
@@ -36,24 +46,21 @@ const userSchema = new Schema({
     role: {
         type: String,
         required: true,
-        default: 'student',
-         // default: 'advisor'
+        default: 'student'
+        // default: 'advisor'
     },
     isOnline: {
         type: Boolean,
         default: false
-    },
-    // groups : {
-    //     type: ObjectId,
-    //     ref: Group
-    // },
+    }, groups: {
+        type: ObjectId,
+        ref: _group2.default
+    }
 });
 
-
-userSchema.statics.findByUsername = function(username,callback){
-    return this.findOne({username: username},callback);
+userSchema.statics.findByUsername = function (username, callback) {
+    return this.findOne({ username: username }, callback);
 };
-
 
 userSchema.methods.checkPassword = function (candidatePassword, callback) {
     bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
@@ -62,25 +69,23 @@ userSchema.methods.checkPassword = function (candidatePassword, callback) {
     });
 };
 
-userSchema.methods.changePassword = function(password, newPassword, callback){
+userSchema.methods.changePassword = function (password, newPassword, callback) {
     bcrypt.compare(password, this.password, function (err, isMatch) {
-        if (err) return callback({success: false, message: 'failed to change password'});
+        if (err) return callback({ success: false, message: 'failed to change password' });
         if (isMatch) {
             bcrypt.genSalt(10, function (err, salt) {
-                if (err) return callback({success: false, message: 'failed to change password'});
+                if (err) return callback({ success: false, message: 'failed to change password' });
                 bcrypt.hash(newPassword, salt, function (err, hash) {
-                    if (err) return callback({success: false, message: 'failed to change password'});
+                    if (err) return callback({ success: false, message: 'failed to change password' });
                     // noinspection JSPotentiallyInvalidUsageOfThis
                     this.password = hash;
-                    this.save((err, newUser) => {
-                        if (err) return callback({success: false, message: 'failed to change password'});
-                        else return callback({success: true, user: newUser, message: 'password changed successfully'});
+                    this.save(function (err, newUser) {
+                        if (err) return callback({ success: false, message: 'failed to change password' });else return callback({ success: true, user: newUser, message: 'password changed successfully' });
                     });
                 });
             });
-        } else return callback({success: false, message: 'incorrect password'});
+        } else return callback({ success: false, message: 'incorrect password' });
     });
-
 };
 
 userSchema.methods.createUser = function (callback) {
@@ -93,7 +98,7 @@ userSchema.methods.createUser = function (callback) {
     });
 };
 
-const User = mongoose.model('User', userSchema);
+var User = mongoose.model('User', userSchema);
 
 // export default User;
 module.exports = User;

@@ -1,11 +1,16 @@
 // database connection
-const mongoose = require('mongoose');
-const log = require('../log/log');
+const mongoose = require("mongoose");
 
-const db = require('../config').db_url;
+const log  = require("../log/log");
+
+const config  = require("../config");
+
 mongoose
-    .connect(db,{ useNewUrlParser: true })
+    .connect(config.db_url,{ useNewUrlParser: true ,useCreateIndex : true})
     .then(() => { log.info('connected to db') })
-    .catch((err) => { log.warn(err.message) });
-mongoose.set('useCreateIndex', true);
+    .catch((err) => { log.info(err.message) });
+
+// mongoose.set('useCreateIndex', true);
+
+// export default mongoose
 module.exports = mongoose;

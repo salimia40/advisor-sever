@@ -1,13 +1,9 @@
-
-const Protocol = {
-    LOGIN: 'user/login',
-    REGISTER: 'user/register',
-    UPDATE_USER: 'user/update-user',
-    UPDATE_EMAIL: 'user/update-email',
-    UPDATE_NAME: 'user/update-name',
-    UPDATE_AVATAR: 'user/update-avatar',
-    UPDATE_BIO: 'user/update-bio',
-    LOGOUT: 'user/logout',
-    CHANGE_PASSWORD: 'user/change-password',
-};
-module.exports = Protocol;
+module.exports.LOGIN = 'user/login';
+module.exports.REGISTER = 'user/register';
+module.exports.UPDATE_USER = 'user/update-user';
+module.exports.UPDATE_EMAIL = 'user/update-email';
+module.exports.UPDATE_NAME = 'user/update-name';
+module.exports.UPDATE_AVATAR = 'user/update-avatar';
+module.exports.UPDATE_BIO = 'user/update-bio';
+module.exports.LOGOUT = 'user/logout';
+module.exports.CHANGE_PASSWORD = 'user/change-password';
