@@ -1,5 +1,4 @@
-.idea
 node_modules
 package-lock.json
 uploads/*
-log/*.log
+logs.log
