@@ -1,6 +1,7 @@
 const uuid = require('uuid');
 const log = require("../log/log");
 const User = require("../models/user");
+const Queue = require("../models/queue");
 const Protocol = require("./protocol");
 
 
@@ -54,12 +55,6 @@ class UserManager {
         this.onLogin(true,this.user);
     }
 
-
-    createInfoRecord = () => {
-        // todo
-    };
-
-
     /** @namespace data.username */
     /** @namespace data.password */
     /** @namespace data.email */
@@ -85,19 +80,30 @@ class UserManager {
                 user.createUser((err, newUser) => {
                     if (err) {
                         log.info(`user error:   ${err.message}`);
-                        this.client.emit(Protocol.USER_LOGIN, { success: false, message: 'database error please try again' })
+                        return this.client.emit(Protocol.USER_LOGIN, { success: false, message: 'database error please try again' })
                     }
                     newUser.isOnline = true;
                     newUser.save();
                     this.user = newUser;
-                    this.sendConfirmEmail();
                     log.info(`user logged in:   ${this.client.id} ${newUser}`);
                     this.client.emit(Protocol.USER_LOGIN, { success: true, user: newUser, message: 'user created and logged in' });
                     this.createInfoRecord();
-                })
+                    this.sendConfirmEmail();
+                });
             }
         });
     };
+
+    createInfoRecord = () => {
+        // create user queue
+        var queue = new Queue({userId: this.user._id});
+        queue.save();
+        // if user is an student create a student doc for it
+    };
+
+    sendConfirmEmail = () => {
+        //todo
+    }
 
 
     /** @namespace data.email */
@@ -112,9 +118,6 @@ class UserManager {
         })
     };
 
-    sendConfirmEmail = () => {
-        //todo
-    }
 
 
     /** @namespace data.name */

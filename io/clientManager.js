@@ -2,13 +2,15 @@ const log = require("../log/log");
 const Message = require("../models/message");
 const Protocol = require("./protocol");
 const UserManager = require('./userManager');
+const Queue = require('../models/queue');
 
 class Client {
 
     constructor(client, onDisconnect, onLogin, clientInjector) {
         this.client = client;
         this.onDisconnect = onDisconnect;
-        this.user = new UserManager(client, onLogin);
+        this.onLogin = onLogin;
+        this.user = new UserManager(client, this.onLoginHandler);
         this.clientInjector = clientInjector;
         this.client.on(Protocol.DISCONNECT, () => {
             this.disconnect(this.client);
@@ -29,6 +31,20 @@ class Client {
                 });
             default: return;
         }
+    }
+
+    onLoginHandler = (bool,user) => {
+        this.onLogin(bool,user);
+        // find unrecieved mesages and send
+        Queue.findOne({userId : user.id},(err,queue)=>{
+            for(var i = (--queue.messages.length); i > 0; i--){
+                var mId = queue.messages.pop;
+                Message.findById(mId,(err,message)=>{
+                    client.emit(Protocol.MESSAGE_SEND, message);
+                })
+            }
+            queue.save();
+        });
     }
 
     onDeleteMessage = (data) => {
