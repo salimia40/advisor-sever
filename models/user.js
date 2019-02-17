@@ -13,7 +13,9 @@ const userSchema = new Schema({
         required: true
     },
     email: {
-        type: String
+        email:{type: String},
+        confirmed: {type: Boolean, default: false},
+        confirmCode: {type: String},
     },
     name: {
         type: String

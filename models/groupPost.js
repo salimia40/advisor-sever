@@ -14,7 +14,13 @@ const groupPostSchema = new Schema({
     memberId: {type: Schema.Types.ObjectId},
     groupId: {type: Schema.Types.ObjectId},
     date: {type: Date, default: Date.now},
-    document:String,
+    content:{
+        text: String,
+        image: String,
+        voice: String,
+        file: String,
+        video: String
+    },
     title:String,
     comments:[groupCommentSchema]
 });

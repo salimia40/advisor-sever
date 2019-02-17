@@ -1,3 +1,4 @@
+const queueManager = require('./queueManager');
 
 /*********************************
  TODO list:
@@ -6,30 +7,41 @@
  student creation and management function for advisors
  post and comment that advisors can create posts and students receive their advisor's post and both can comment
  student information updates
- comment replies
  advisor-student chat
- group chats
+ groups that work like facebook
  *********************************/
 
 var clients = new Map();
+var users = new Map();
+
 
 const connectionListener = client => {
 
-    let clientManager = new Client(client, () => {
-        clients.delete(client.id);
-    });
+    let clientManager = new Client(client,
+        //on disconnect
+        () => {
+            clients.delete(client.id);
+        },
+        //on login
+        (loggedin, user) => {
+            if (loggedin) {
+                users.set(user.id,client);
+            } else {
+                users.delete(user.id);
+            }
+        },
+        //client injector
+        (action) => {
+            if (users.has(action.userId)) {
+                var clientId = users.get(action.userId);
+                if(clients.has(clientId)){
+                    var clientManager = clients.get(clientId);
+                    clientManager.callAction(action);
+                } else queueManager(action);
+            } else queueManager(action);
+        }
+        );
     clients.set(client.id, clientManager);
 };
 
 module.exports = connectionListener;
-
-
-// to get key by value
-// let people = new Map();
-// people.set('1', 'jhon');
-// people.set('2', 'jasmein');
-// people.set('3', 'abdo');
-
-// let jhonKeys = [...people.entries()]
-//         .filter(({ 1: v }) => v === 'jhon')
-//         .map(([k]) => k);

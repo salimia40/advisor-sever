@@ -10,12 +10,15 @@ const messageSchema = new Schema({
         image: String,
         voice: String,
         file: String,
+        video: String
     },
     state: {
         sent: {type: Boolean, default: true},
         received: {type: Boolean, default: false},
         viewed: {type: Boolean, default: false},
-    }
+    },
+    deleted: {type: Boolean, default: false},
+    updated: {type: Boolean, default: false},
 });
 
 const Message = mongoose.model('Message',messageSchema);

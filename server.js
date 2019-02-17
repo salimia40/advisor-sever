@@ -13,6 +13,7 @@ const fs = require('fs');
 app.use(fileUpload());
 //@post     /upload     link upload a file to server
 //@param    file        file to upload
+
 fs.exists(path.join(__dirname,'/uploads'), exists => {
     if(!exists){
         fs.mkdir(path.join(__dirname,'/uploads'), err => {if(err) throw err} );
