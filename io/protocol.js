@@ -12,6 +12,9 @@ module.exports.USER_CHANGE_PASSWORD = 'user/change-password';
 module.exports.MESSAGE_SEND = 'message/send';
 module.exports.MESSAGE_UPDATE = 'message/update';
 module.exports.MESSAGE_DELETE = 'message/delete';
+//student events
+module.exports.STUDENT_GET = 'student/get';
+module.exports.STUDENT_UPDATE = 'student/update';
 // enums
 module.exports.UserTypes = {advisor:'advisor',student:'student'};
 module.exports.ActionTypes = {message:'message'};

@@ -2,8 +2,8 @@ const uuid = require('uuid');
 const log = require("../log/log");
 const User = require("../models/user");
 const Queue = require("../models/queue");
+const Student = require("../models/student");
 const Protocol = require("./protocol");
-
 
 class UserManager {
 
@@ -11,14 +11,16 @@ class UserManager {
         this.client = client;
         this.onLogin = onLogin;
         this.user = null;
-        this.client.on(Protocol.USER_USER_LOGIN, this.login);
-        this.client.on(Protocol.USER_USER_REGISTER,  this.register);
-        this.client.on(Protocol.USER_USER_UPDATE_BIO,  this.updateBio);
-        this.client.on(Protocol.USER_USER_UPDATE_NAME,  this.updateName);
-        this.client.on(Protocol.USER_USER_UPDATE_EMAIL,  this.updateEmail);
-        this.client.on(Protocol.USER_USER_UPDATE_AVATAR,  this.updateAvatar);
-        this.client.on(Protocol.USER_USER_CHANGE_PASSWORD,  this.changePassword);
-        this.client.on(Protocol.USER_USER_LOGOUT, this.logout);
+        this.client.on(Protocol.USER_LOGIN, this.login);
+        this.client.on(Protocol.USER_REGISTER,  this.register);
+        this.client.on(Protocol.USER_UPDATE_BIO,  this.updateBio);
+        this.client.on(Protocol.USER_UPDATE_NAME,  this.updateName);
+        this.client.on(Protocol.USER_UPDATE_EMAIL,  this.updateEmail);
+        this.client.on(Protocol.USER_UPDATE_AVATAR,  this.updateAvatar);
+        this.client.on(Protocol.USER_CHANGE_PASSWORD,  this.changePassword);
+        this.client.on(Protocol.STUDENT_UPDATE,  this.updateStudent);
+        this.client.on(Protocol.STUDENT_GET,  this.sendStudent);
+        this.client.on(Protocol.USER_LOGOUT, this.logout);
     }
 
     logout = (ignored) => {
@@ -53,7 +55,7 @@ class UserManager {
 
     onLogginEvent = () => {
         this.onLogin(true,this.user);
-    }
+    };
 
     /** @namespace data.username */
     /** @namespace data.password */
@@ -99,11 +101,51 @@ class UserManager {
         var queue = new Queue({userId: this.user._id});
         queue.save();
         // if user is an student create a student doc for it
+        var student = new Student();
+        student.username = this.user.username;
+        student.userId = this.user._id;
+        student.advisorId = this.user.advisorId;
+        student.save((err,student) => {
+            client.emit(Protocol.STUDENT_GET,student);
+        });
+    };
+
+    sendStudent = (ignored) => {
+        Student.findOne({userId : this.user._id},(err,student) => {
+            client.emit(Protocol.STUDENT_GET,student);
+        });
+    }
+
+    updateStudent = (data) => {
+        Student.findOne({userId : this.user._id},(err,student) => {
+            
+            student.name = data.name
+            student.Religion = data.Religion
+            student.nationality = data.nationality
+            student.birthPlace = data.birthPlace
+            student.birthday = data.birthday
+            student.entranceDay = data.entranceDay
+            student.fatherName = data.fatherName
+            student.sex = data.sex
+            student.education = data.education
+            student.marriage = data.marriage
+            student.address = data.address
+            student.contacts = data.contacts
+            student.leave = data.leave
+            student.Military = data.Military
+            student.job = data.job
+            student.personal = data.personal
+            student.disease = data.disease
+
+            student.save((err,student) => {
+                client.emit(Protocol.STUDENT_GET,student);
+            });
+        });
     };
 
     sendConfirmEmail = () => {
         //todo
-    }
+    };
 
 
     /** @namespace data.email */

@@ -37,7 +37,7 @@ const studentSchema = new Schema({
         reason: String
     },
     Military: String,
-    jop: {
+    job: {
         isOccupied: {type: Boolean, default: false},
         occupation: String,
         address: String
@@ -54,11 +54,6 @@ const studentSchema = new Schema({
         }
     }
 });
-
-studentSchema.statics.CreateStudent = function(user,callback){
-    let student = new this.model('Student')({username: user.username,userId: user._id,advisorId: user.advisorId});
-    student.save(callback);
-};
 
 const Student = mongoose.model('Student', studentSchema);
 module.exports = Student;
