@@ -6,6 +6,7 @@ const Queue = require('../models/queue');
 
 class Client {
 
+
     constructor(client, onDisconnect, onLogin, clientInjector) {
         this.client = client;
         this.onDisconnect = onDisconnect;
@@ -19,6 +20,7 @@ class Client {
         this.client.on(Protocol.MESSAGE_SEND, this.onSendMessage);
         this.client.on(Protocol.MESSAGE_UPDATE, this.onUpdateMessage);
         this.client.on(Protocol.MESSAGE_DELETE, this.onDeleteMessage);
+        this.client.on(Protocol.MESSAGE_GET, this.onGetMessage);
     }
 
     callAction = (action) => {
@@ -27,25 +29,26 @@ class Client {
                 Message.findById(action.data.messageId, (err, message) => {
                     message.state.received = true;
                     message.save();
-                    this.client.emit(Protocol.MESSAGE, message)
+                    this.client.emit(Protocol.MESSAGE_SEND, message)
                 });
+                return;
             default: return;
         }
-    }
+    };
 
     onLoginHandler = (bool,user) => {
         this.onLogin(bool,user);
         // find unrecieved mesages and send
         Queue.findOne({userId : user.id},(err,queue)=>{
             for(var i = (--queue.messages.length); i > 0; i--){
-                var mId = queue.messages.pop;
+                let mId = queue.messages.pop();
                 Message.findById(mId,(err,message)=>{
-                    client.emit(Protocol.MESSAGE_SEND, message);
+                    this.client.emit(Protocol.MESSAGE_SEND, message);
                 })
             }
             queue.save();
         });
-    }
+    };
 
     onDeleteMessage = (data) => {
 
@@ -56,18 +59,18 @@ class Client {
                 message.deleted = true;
                 message.save((err, message) => {
                     if (err) return;
-                    client.emit(Protocol.MESSAGE_SEND, message);
+                    this.client.emit(Protocol.MESSAGE_SEND, message);
                     this.clientInjector({
                         type: Protocol.ActionTypes.message,
                         userId: message.to,
                         data: {
-                            messageId: message.id
+                            messageId: message._id
                         }
                     })
                 });
             }
         })
-    }
+    };
 
     onUpdateMessage = (data) => {
 
@@ -77,7 +80,7 @@ class Client {
                 message.updated = true;
                 message.save((err, message) => {
                     if (err) return;
-                    client.emit(Protocol.MESSAGE_SEND, message);
+                    this.client.emit(Protocol.MESSAGE_SEND, message);
                     this.clientInjector({
                         type: Protocol.ActionTypes.message,
                         userId: message.to,
@@ -88,7 +91,7 @@ class Client {
                 });
             }
         })
-    }
+    };
 
     onSendMessage = (data) => {
         if (this.user.isLoggedin) {
@@ -98,7 +101,7 @@ class Client {
             });
             message.save((err, message) => {
                 if (err) return;
-                client.emit(Protocol.MESSAGE_SEND, message);
+                this.client.emit(Protocol.MESSAGE_SEND, message);
                 this.clientInjector({
                     type: Protocol.ActionTypes.message,
                     userId: message.to,
@@ -108,7 +111,25 @@ class Client {
                 })
             });
         }
-    }
+    };
+
+    onGetMessage = (data) => {
+        var userId = this.user.getUserId();
+        
+        if(data.other === null){
+            Message.getAllChats(userId,(err,messages)=>{
+                messages.forEach((message)=>{
+                    this.client.emit(Protocol.MESSAGE_SEND, message);
+                });
+        });    
+        } else {
+            Message.getUserChats(userId,data.other,(err,messages)=>{
+                messages.forEach((message)=>{
+                    this.client.emit(Protocol.MESSAGE_SEND, message);
+                });
+            });
+        }
+    };
 
     disconnect = () => {
         if (this.user.isLoggedin()) {

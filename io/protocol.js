@@ -10,6 +10,7 @@ module.exports.USER_LOGOUT = 'user/logout';
 module.exports.USER_CHANGE_PASSWORD = 'user/change-password';
 // message events
 module.exports.MESSAGE_SEND = 'message/send';
+module.exports.MESSAGE_GET = 'message/get';
 module.exports.MESSAGE_UPDATE = 'message/update';
 module.exports.MESSAGE_DELETE = 'message/delete';
 //student events
