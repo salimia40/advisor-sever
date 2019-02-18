@@ -10,6 +10,8 @@ class Client {
     constructor(client, onDisconnect, onLogin, clientInjector) {
         this.client = client;
         this.onDisconnect = onDisconnect;
+        // log.debug(this.client.emit)
+        this.client.emit('test',{msg:'hi'})
         this.onLogin = onLogin;
         this.user = new UserManager(client, this.onLoginHandler);
         this.clientInjector = clientInjector;
@@ -23,7 +25,7 @@ class Client {
         this.client.on(Protocol.MESSAGE_GET, this.onGetMessage);
     }
 
-    callAction = (action) => {
+    callAction  (action)  {
         switch (action.type) {
             case Protocol.ActionTypes.message:
                 Message.findById(action.data.messageId, (err, message) => {
@@ -36,10 +38,10 @@ class Client {
         }
     };
 
-    onLoginHandler = (bool,user) => {
+    onLoginHandler  (bool,user) {
         this.onLogin(bool,user);
         // find unrecieved mesages and send
-        Queue.findOne({userId : user.id},(err,queue)=>{
+        Queue.findOne({userId : user.id},function(err,queue){
             for(var i = (--queue.messages.length); i > 0; i--){
                 let mId = queue.messages.pop();
                 Message.findById(mId,(err,message)=>{
@@ -50,10 +52,10 @@ class Client {
         });
     };
 
-    onDeleteMessage = (data) => {
+    onDeleteMessage  (data)  {
 
         //todo confirm that user is message owner
-        Message.findById(data.messageId, (err, message) => {
+        Message.findById(data.messageId, function(err, message){
             if (message.from == this.user.getUserId()) {
                 message.content = null;
                 message.deleted = true;
@@ -72,9 +74,9 @@ class Client {
         })
     };
 
-    onUpdateMessage = (data) => {
+    onUpdateMessage  (data) {
 
-        Message.findById(data.messageId, (err, message) => {
+        Message.findById(data.messageId, function(err, message){
             if (message.from == this.user.getUserId()) {
                 message.content = data.content;
                 message.updated = true;
@@ -93,13 +95,13 @@ class Client {
         })
     };
 
-    onSendMessage = (data) => {
+    onSendMessage  (data) {
         if (this.user.isLoggedin) {
             let message = new Message({
                 from: this.user.getUserId,
                 ...data
             });
-            message.save((err, message) => {
+            message.save(function(err, message){
                 if (err) return;
                 this.client.emit(Protocol.MESSAGE_SEND, message);
                 this.clientInjector({
@@ -113,17 +115,17 @@ class Client {
         }
     };
 
-    onGetMessage = (data) => {
+    onGetMessage(data) {
         var userId = this.user.getUserId();
         
         if(data.other === null){
-            Message.getAllChats(userId,(err,messages)=>{
+            Message.getAllChats(userId,function(err,messages){
                 messages.forEach((message)=>{
                     this.client.emit(Protocol.MESSAGE_SEND, message);
                 });
         });    
         } else {
-            Message.getUserChats(userId,data.other,(err,messages)=>{
+            Message.getUserChats(userId,data.other,function(err,messages){
                 messages.forEach((message)=>{
                     this.client.emit(Protocol.MESSAGE_SEND, message);
                 });
@@ -131,11 +133,10 @@ class Client {
         }
     };
 
-    disconnect = () => {
+    disconnect  ()  {
         if (this.user.isLoggedin()) {
             this.user.logout();
         }
-        log.info(`this.client disconnected:  ${this.client.id}`);
     };
 }
 

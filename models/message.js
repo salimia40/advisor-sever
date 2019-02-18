@@ -5,7 +5,7 @@ const messageSchema = new Schema({
     from: {type: Schema.Types.ObjectId, },
     to: {type: Schema.Types.ObjectId, },
     date: {type: Date, default: Date.now},
-    reply:{ isReply:{type: Boolean, default: false} ,to: {type: ObjectId,}},
+    reply:{ isReply:{type: Boolean, default: false} ,to: {type: Schema.Types.ObjectId,}},
     content: {
         text: String,
         image: String,

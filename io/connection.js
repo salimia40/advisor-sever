@@ -1,4 +1,5 @@
 const queueManager = require('./queueManager');
+const Client = require('./clientManager');
 
 /*********************************
  TODO list:
@@ -10,6 +11,7 @@ const queueManager = require('./queueManager');
  advisor-student chat
  groups that work like facebook
  *********************************/
+
 
 var clients = new Map();
 var users = new Map();

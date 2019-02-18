@@ -1,5 +1,6 @@
 const mongoose = require("./init");
 const bcrypt = require("bcryptjs");
+const log = require("../log/log");
 
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
@@ -74,7 +75,7 @@ userSchema.methods.changePassword = function(password, newPassword, callback){
                     if (err) return callback({success: false, message: 'failed to change password'});
                     // noinspection JSPotentiallyInvalidUsageOfThis
                     this.password = hash;
-                    this.save((err, newUser) => {
+                    this.save(function(err, newUser) {
                         if (err) return callback({success: false, message: 'failed to change password'});
                         else return callback({success: true, user: newUser, message: 'password changed successfully'});
                     });
@@ -85,12 +86,14 @@ userSchema.methods.changePassword = function(password, newPassword, callback){
 
 };
 
-userSchema.methods.createUser = function (callback) {
+userSchema.statics.createUser = function (user,callback) {
     bcrypt.genSalt(10, function (err, salt) {
-        bcrypt.hash(this.password, salt, function (err, hash) {
+        bcrypt.hash(user.password, salt, function(err, hash) {
             // noinspection JSPotentiallyInvalidUsageOfThis
-            this.password = hash;
-            this.save(callback);
+            user.password = hash;
+            log.info(hash);
+            log.info(user);
+            user.save(callback);
         });
     });
 };
