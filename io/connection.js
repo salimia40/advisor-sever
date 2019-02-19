@@ -27,7 +27,7 @@ const connectionListener = client => {
         //on login
         (loggedin, user) => {
             if (loggedin) {
-                users.set(user.id,client);
+                users.set(user.id, client);
             } else {
                 users.delete(user.id);
             }
@@ -36,14 +36,32 @@ const connectionListener = client => {
         (action) => {
             if (users.has(action.userId)) {
                 var clientId = users.get(action.userId);
-                if(clients.has(clientId)){
+                if (clients.has(clientId)) {
                     var clientManager = clients.get(clientId);
                     clientManager.callAction(action);
                 } else queueManager(action);
             } else queueManager(action);
-        }
-        );
+        }, client.emit
+    );
     clients.set(client.id, clientManager);
+    client.on(Protocol.MESSAGE_SEND, clientManager.onSendMessage);
+    client.on(Protocol.MESSAGE_UPDATE, clientManager.onUpdateMessage);
+    client.on(Protocol.MESSAGE_DELETE, clientManager.onDeleteMessage);
+    client.on(Protocol.MESSAGE_GET, clientManager.onGetMessage);
+    client.on(Protocol.USER_LOGIN, clientManager.user.login);
+    client.on(Protocol.USER_REGISTER, clientManager.user.register);
+    client.on(Protocol.USER_UPDATE_BIO, clientManager.user.updateBio);
+    client.on(Protocol.USER_UPDATE_NAME, clientManager.user.updateName);
+    client.on(Protocol.USER_UPDATE_EMAIL, clientManager.user.updateEmail);
+    client.on(Protocol.USER_UPDATE_AVATAR, clientManager.user.updateAvatar);
+    client.on(Protocol.USER_CHANGE_PASSWORD, clientManager.user.changePassword);
+    client.on(Protocol.STUDENT_UPDATE, clientManager.user.updateStudent);
+    client.on(Protocol.STUDENT_GET, clientManager.user.sendStudent);
+    client.on(Protocol.USER_LOGOUT, clientManager.user.logout);
+    client.on(Protocol.DISCONNECT, () => {
+        clientManager.disconnect(client);
+        clientManager.onDisconnect();
+    });
 };
 
 module.exports = connectionListener;

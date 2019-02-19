@@ -42,6 +42,6 @@ socket.on('test', function(data){
     console.log(data.msg.toString())
 });
 
-socket.emit(protocol.USER_REGISTER,{username:'delsaars',password:'rahil19',email:'puyaars@gmail.com',name:'aria',role:'advisor'})
+socket.emit(protocol.USER_REGISTER,{username:'shasprs',password:'rahil19',email:'puyaars@gmail.com',name:'aria',role:'advisor'})
 // socket.emit(protocol.USER_REGISTER,{username:'puyaars',password:'rahil19',email:'puyaars@gmail.com'})
 
