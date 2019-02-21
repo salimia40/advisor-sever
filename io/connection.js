@@ -45,6 +45,12 @@ const connectionListener = client => {
     client.on(Protocol.MESSAGE_UPDATE, clientManager.onUpdateMessage);
     client.on(Protocol.MESSAGE_DELETE, clientManager.onDeleteMessage);
     client.on(Protocol.MESSAGE_GET, clientManager.onGetMessage);
+    client.on(Protocol.BLOG_GET, clientManager.getBlogs);
+    client.on(Protocol.BLOG_UPDATE, clientManager.updateBlog);
+    client.on(Protocol.BLOG_DELETE, clientManager.deleteBlog);
+    client.on(Protocol.BLOG_COMMENT_ADD, clientManager.commentBlog);
+    client.on(Protocol.BLOG_COMMENT_REMOVE, clientManager.removeCommentBlog);
+    client.on(Protocol.BLOG_SEND, clientManager.sendBlog);
     client.on(Protocol.USER_LOGIN, clientManager.user.login);
     client.on(Protocol.USER_REGISTER, clientManager.user.register);
     client.on(Protocol.USER_UPDATE_BIO, clientManager.user.updateBio);

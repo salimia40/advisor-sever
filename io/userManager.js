@@ -171,6 +171,7 @@ class UserManager {
     };
 
     getUserId() { return this.user.id; }
+    getAdvisorId() { return this.user.advisorId; }
     getUser() { return this.user; }
     isAdvisor() { return this.user.role === Protocol.UserTypes.advisor; }
     isLoggedin() { return this.user !== null; }

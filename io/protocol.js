@@ -21,6 +21,8 @@ module.exports.BLOG_SEND = 'blog/send';
 module.exports.BLOG_GET = 'blog/get';
 module.exports.BLOG_UPDATE = 'blog/update';
 module.exports.BLOG_DELETE = 'blog/delete';
+module.exports.BLOG_COMMENT_ADD = 'blog/comment/add';
+module.exports.BLOG_COMMENT_REMOVE = 'blog/comment/remove';
 // enums
 module.exports.UserTypes = {advisor:'advisor',student:'student'};
 module.exports.ActionTypes = {message:'message'};

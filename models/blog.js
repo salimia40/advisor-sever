@@ -9,6 +9,7 @@ const commentSchema = new Schema({
         text: String,
         image: String,
     }
+    
 });
 
 const blogSchema = new Schema({
@@ -16,7 +17,8 @@ const blogSchema = new Schema({
     date: {type: Date, default: Date.now},
     document:String,
     title:String,
-    comments:[commentSchema]
+    comments:[commentSchema],
+    deleted : {type:Boolean,default:false}
 });
 
 const Blog = mongoose.model('Blog',blogSchema);
