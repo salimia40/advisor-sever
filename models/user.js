@@ -46,10 +46,6 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
-    // groups : {
-    //     type: ObjectId,
-    //     ref: Group
-    // },
 });
 
 

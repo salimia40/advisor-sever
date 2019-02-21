@@ -1,5 +1,6 @@
 const queueManager = require('./queueManager');
 const Client = require('./clientManager');
+const Protocol = require("./protocol");
 
 /*********************************
  TODO list:
@@ -19,11 +20,7 @@ var users = new Map();
 
 const connectionListener = client => {
 
-    let clientManager = new Client(client,
-        //on disconnect
-        () => {
-            clients.delete(client.id);
-        },
+    let clientManager = new Client(
         //on login
         (loggedin, user) => {
             if (loggedin) {
@@ -60,7 +57,8 @@ const connectionListener = client => {
     client.on(Protocol.USER_LOGOUT, clientManager.user.logout);
     client.on(Protocol.DISCONNECT, () => {
         clientManager.disconnect(client);
-        clientManager.onDisconnect();
+        clients.delete(client.id);
+        // clientManager.onDisconnect();
     });
 };
 

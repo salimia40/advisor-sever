@@ -21,6 +21,7 @@ const groupPostSchema = new Schema({
         file: String,
         video: String
     },
+    tags:[String],
     title:String,
     comments:[groupCommentSchema]
 });

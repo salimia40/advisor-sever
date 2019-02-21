@@ -3,36 +3,15 @@ const Message = require("../models/message");
 const Protocol = require("./protocol");
 const UserManager = require('./userManager');
 const Queue = require('../models/queue');
+const Blog = require('../models/blog');
 
 class Client {
 
-    constructor( onDisconnect, onLogin, clientInjector, emit) {
-        // this.client = client;
+    constructor(onLogin, clientInjector, emit) {
         this.emit = emit;
-        this.onDisconnect = onDisconnect;
-        // log.debug(this.client.emit)
-        // this.client.emit('test', { msg: 'hi' })
         this.onLogin = onLogin;
         this.user = new UserManager(this.onLoginHandler, this.emit);
         this.clientInjector = clientInjector;
-        // this.client.on(Protocol.DISCONNECT, () => {
-        //     this.disconnect(this.client);
-        //     this.onDisconnect();
-        // });
-        // this.client.on(Protocol.MESSAGE_SEND, this.onSendMessage);
-        // this.client.on(Protocol.MESSAGE_UPDATE, this.onUpdateMessage);
-        // this.client.on(Protocol.MESSAGE_DELETE, this.onDeleteMessage);
-        // this.client.on(Protocol.MESSAGE_GET, this.onGetMessage);
-        // this.client.on(Protocol.USER_LOGIN, user.login);
-        // this.client.on(Protocol.USER_REGISTER, user.register);
-        // this.client.on(Protocol.USER_UPDATE_BIO, user.updateBio);
-        // this.client.on(Protocol.USER_UPDATE_NAME, user.updateName);
-        // this.client.on(Protocol.USER_UPDATE_EMAIL, user.updateEmail);
-        // this.client.on(Protocol.USER_UPDATE_AVATAR, user.updateAvatar);
-        // this.client.on(Protocol.USER_CHANGE_PASSWORD, user.changePassword);
-        // this.client.on(Protocol.STUDENT_UPDATE, user.updateStudent);
-        // this.client.on(Protocol.STUDENT_GET, user.sendStudent);
-        // this.client.on(Protocol.USER_LOGOUT, user.logout);
     }
 
     callAction(action) {

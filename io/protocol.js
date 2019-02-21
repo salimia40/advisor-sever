@@ -16,6 +16,11 @@ module.exports.MESSAGE_DELETE = 'message/delete';
 //student events
 module.exports.STUDENT_GET = 'student/get';
 module.exports.STUDENT_UPDATE = 'student/update';
+// blog events
+module.exports.BLOG_SEND = 'blog/send';
+module.exports.BLOG_GET = 'blog/get';
+module.exports.BLOG_UPDATE = 'blog/update';
+module.exports.BLOG_DELETE = 'blog/delete';
 // enums
 module.exports.UserTypes = {advisor:'advisor',student:'student'};
 module.exports.ActionTypes = {message:'message'};

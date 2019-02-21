@@ -1,6 +1,5 @@
 const mongoose = require("./init");
 
-
 const Schema = mongoose.Schema;
 
 const commentSchema = new Schema({
@@ -12,7 +11,7 @@ const commentSchema = new Schema({
     }
 });
 
-const postSchema = new Schema({
+const blogSchema = new Schema({
     userId: {type: Schema.Types.ObjectId, },
     date: {type: Date, default: Date.now},
     document:String,
@@ -20,5 +19,5 @@ const postSchema = new Schema({
     comments:[commentSchema]
 });
 
-const Post = mongoose.model('Post',postSchema);
-module.exports = Post;
+const Blog = mongoose.model('Blog',blogSchema);
+module.exports = Blog;
