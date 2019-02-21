@@ -34,7 +34,7 @@ class UserManager {
                 if (isMatch) {
                     user.isOnline = true;
                     user.save();
-                    this.user = newUser;
+                    this.user = user;
                     log.info(`user registered:   ${this.client.id}    ${user}`);
                     return this.emit(Protocol.USER_LOGIN, { success: true, message: 'login successful', user: user });
                 }
@@ -117,6 +117,23 @@ class UserManager {
         //todo
     };
 
+    findUsers(data){
+        User.findUsers(data.querry,(err,users)=>{
+            this.emit(Protocol.USER_FIND,users);
+        })
+    }
+
+    getAdvisor(data){
+        this.user.getAdvisor((err,user) => {
+            this.emit(Protocol.USER_GET_ADVISOR,user);
+        })
+    }
+
+    getUser(data){
+        User.findById(data.findById,(err,user)=>{
+            this.emit(Protocol.USER_GET,user);
+        })
+    }
 
     /** @namespace data.email */
     updateEmail(data) {
@@ -129,8 +146,6 @@ class UserManager {
             this.sendConfirmEmail();
         })
     };
-
-
 
     /** @namespace data.name */
     updateName(data) {
@@ -164,7 +179,7 @@ class UserManager {
     /** @namespace data.newPassword */
     /** @namespace data.password */
     changePassword(data) {
-        this.user.changePassword(data.password, data.newPassword,  (res) => {
+        User.changePassword(this.user,data.password, data.newPassword,  (res) => {
             this.emit(Protocol.USER_CHANGE_PASSWORD, res);
             if (res.success) this.user = res.user;
         })
@@ -175,8 +190,6 @@ class UserManager {
     getUser() { return this.user; }
     isAdvisor() { return this.user.role === Protocol.UserTypes.advisor; }
     isLoggedin() { return this.user !== null; }
-
-
 }
 
 module.exports = UserManager;

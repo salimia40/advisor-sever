@@ -1,6 +1,7 @@
 const queueManager = require('./queueManager');
 const Client = require('./clientManager');
 const Protocol = require("./protocol");
+const log = require("../log/log");
 
 /*********************************
  TODO list:
@@ -40,6 +41,7 @@ const connectionListener = client => {
             } else queueManager(action);
         }, client.emit
     );
+    
     clients.set(client.id, clientManager);
     client.on(Protocol.MESSAGE_SEND, clientManager.onSendMessage);
     client.on(Protocol.MESSAGE_UPDATE, clientManager.onUpdateMessage);
@@ -61,6 +63,9 @@ const connectionListener = client => {
     client.on(Protocol.STUDENT_UPDATE, clientManager.user.updateStudent);
     client.on(Protocol.STUDENT_GET, clientManager.user.sendStudent);
     client.on(Protocol.USER_LOGOUT, clientManager.user.logout);
+    client.on(Protocol.USER_FIND, clientManager.user.findUsers);
+    client.on(Protocol.USER_GET, clientManager.user.getUser);
+    client.on(Protocol.USER_GET_ADVISOR, clientManager.user.getAdvisor);
     client.on(Protocol.DISCONNECT, () => {
         clientManager.disconnect(client);
         clients.delete(client.id);

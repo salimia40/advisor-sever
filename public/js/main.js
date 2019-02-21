@@ -26,7 +26,8 @@
 
 }
 
-var socket = io('localhost:5000');
+// var socket = io('localhost:5000');
+var socket = io();
 
 socket.on(protocol.CONNECTION, function(){
     console.log('connected')
@@ -42,6 +43,5 @@ socket.on('test', function(data){
     console.log(data.msg.toString())
 });
 
-socket.emit(protocol.USER_REGISTER,{username:'shasprs',password:'rahil19',email:'puyaars@gmail.com',name:'aria',role:'advisor'})
-// socket.emit(protocol.USER_REGISTER,{username:'puyaars',password:'rahil19',email:'puyaars@gmail.com'})
-
+// socket.emit(protocol.USER_REGISTER,{username:'shasprs',password:'rahil19',email:'puyaars@gmail.com',name:'aria',role:'advisor'})
+socket.emit(protocol.USER_LOGIN,{username:'puyaars',password:'rahil19'})

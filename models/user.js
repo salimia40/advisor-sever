@@ -48,9 +48,15 @@ const userSchema = new Schema({
     },
 });
 
+userSchema.index({username: 'text', email: 'text', name: 'text'},{default_language: 'none'});
+
 
 userSchema.statics.findByUsername = function(username,callback){
     return this.findOne({username: username},callback);
+};
+
+userSchema.statics.findUsers = function(q,callback){
+    return this.find($or[{username: {$regex: q}},{email:{$regex: q}},{name:{$regex: q}}],callback);
 };
 
 
@@ -61,8 +67,13 @@ userSchema.methods.checkPassword = function (candidatePassword, callback) {
     });
 };
 
-userSchema.methods.changePassword = function(password, newPassword, callback){
-    bcrypt.compare(password, this.password, function (err, isMatch) {
+userSchema.methods.getAdvisor = function (callback) {
+    if(this.role === 'advisor') return callback(false,this);
+    this.model('User').findById(this.advisorId,callback)
+};
+
+userSchema.statics.changePassword = function(user,password, newPassword, callback){
+    bcrypt.compare(password, user.password, function (err, isMatch) {
         if (err) return callback({success: false, message: 'failed to change password'});
         if (isMatch) {
             bcrypt.genSalt(10, function (err, salt) {
@@ -70,8 +81,8 @@ userSchema.methods.changePassword = function(password, newPassword, callback){
                 bcrypt.hash(newPassword, salt, function (err, hash) {
                     if (err) return callback({success: false, message: 'failed to change password'});
                     // noinspection JSPotentiallyInvalidUsageOfThis
-                    this.password = hash;
-                    this.save(function(err, newUser) {
+                    user.password = hash;
+                    user.save(function(err, newUser) {
                         if (err) return callback({success: false, message: 'failed to change password'});
                         else return callback({success: true, user: newUser, message: 'password changed successfully'});
                     });

@@ -8,6 +8,9 @@ module.exports.USER_UPDATE_AVATAR = 'user/update-avatar';
 module.exports.USER_UPDATE_BIO = 'user/update-bio';
 module.exports.USER_LOGOUT = 'user/logout';
 module.exports.USER_CHANGE_PASSWORD = 'user/change-password';
+module.exports.USER_FIND = 'user/find';
+module.exports.USER_GET = 'user/get';
+module.exports.USER_GET_ADVISOR = 'user/get/advisor';
 // message events
 module.exports.MESSAGE_SEND = 'message/send';
 module.exports.MESSAGE_GET = 'message/get';
