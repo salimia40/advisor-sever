@@ -55,6 +55,13 @@ userSchema.statics.findByUsername = function(username,callback){
     return this.findOne({username: username},callback);
 };
 
+userSchema.statics.isOnline = function(userId,callback){
+    return this.findById(userId,(err,user)=> {
+        if (err) return callback(false);
+        callback(user.isOnline);
+    });
+};
+
 userSchema.statics.findUsers = function(q,callback){
     return this.find($or[{username: {$regex: q}},{email:{$regex: q}},{name:{$regex: q}}],callback);
 };

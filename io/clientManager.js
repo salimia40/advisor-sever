@@ -27,10 +27,9 @@ class Client {
         }
     };
 
-    onLoginHandler(bool, user) {
-        this.onLogin(bool, user);
+    onLoginHandler(bool, userId) {
         // find unrecieved mesages and send
-        Queue.findOne({ userId: user.id }, (err, queue) => {
+        Queue.findOne({ userId: userId }, (err, queue) => {
             for (var i = (--queue.messages.length); i > 0; i--) {
                 let mId = queue.messages.pop();
                 Message.findById(mId, (err, message) => {
@@ -39,6 +38,7 @@ class Client {
             }
             queue.save();
         });
+        return this.onLogin(bool, userId);
     };
 
     onDeleteMessage(data) {
@@ -168,7 +168,7 @@ class Client {
     
     removeCommentBlog(data) {
         Blog.findById(data._id,(err,blog)=>{
-            blog.comments.filter((comment) => comment._id === data.cId)
+            blog.comments.filter((comment) => comment._id !== data.cId)
             blog.save((err,blog)=> {
                 this.emit(Protocol.BLOG_GET,blog);
             })

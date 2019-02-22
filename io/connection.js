@@ -1,4 +1,3 @@
-const queueManager = require('./queueManager');
 const Client = require('./clientManager');
 const Protocol = require("./protocol");
 const log = require("../log/log");
@@ -14,35 +13,25 @@ const log = require("../log/log");
  groups that work like facebook
  *********************************/
 
-
-var clients = new Map();
-var users = new Map();
-
+const dataManager = require('./DataManager');
 
 const connectionListener = client => {
 
     let clientManager = new Client(
         //on login
-        (loggedin, user) => {
+        (loggedin, userId) => {
             if (loggedin) {
-                users.set(user.id, client);
+                dataManager.loginClient(client.id,userId);
+                return false;
             } else {
-                users.delete(user.id);
+                return dataManager.logoutUser(client.id,userId);
             }
         },
         //client injector
-        (action) => {
-            if (users.has(action.userId)) {
-                var clientId = users.get(action.userId);
-                if (clients.has(clientId)) {
-                    var clientManager = clients.get(clientId);
-                    clientManager.callAction(action);
-                } else queueManager(action);
-            } else queueManager(action);
-        }, client.emit
+        DataManager.call, client.emit
     );
-    
-    clients.set(client.id, clientManager);
+
+    // clients.set(client.id, clientManager);
     client.on(Protocol.MESSAGE_SEND, clientManager.onSendMessage);
     client.on(Protocol.MESSAGE_UPDATE, clientManager.onUpdateMessage);
     client.on(Protocol.MESSAGE_DELETE, clientManager.onDeleteMessage);
@@ -68,9 +57,10 @@ const connectionListener = client => {
     client.on(Protocol.USER_GET_ADVISOR, clientManager.user.getAdvisor);
     client.on(Protocol.DISCONNECT, () => {
         clientManager.disconnect(client);
-        clients.delete(client.id);
-        // clientManager.onDisconnect();
+        dataManager.disconnectClient(client.id);
     });
+
+    dataManager.addClient(client.id, clientManager);
 };
 
 module.exports = connectionListener;
