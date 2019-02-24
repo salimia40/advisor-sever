@@ -17,6 +17,8 @@ const dataManager = require('./DataManager');
 
 const connectionListener = client => {
 
+    log.info(`datamanager call: ${dataManager.callUser}`);
+
     let clientManager = new Client(
         //on login
         (loggedin, userId) => {
@@ -28,7 +30,7 @@ const connectionListener = client => {
             }
         },
         //client injector
-        DataManager.call, client.emit
+        dataManager.callUser, client.emit
     );
 
     // clients.set(client.id, clientManager);

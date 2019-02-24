@@ -19,7 +19,7 @@ const RootReducer = combineReducers({
 });
 
 const initialState = {};
-const middlewares = [thunk,socketMiddleware];
+const middlewares = [socketMiddleware];
 
 const store = createStore(RootReducer,initialState,compose(
     applyMiddleware(...middlewares),

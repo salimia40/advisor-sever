@@ -23,7 +23,6 @@ class LoginSide extends React.Component {
     }
 
     login = () => {
-        this.toggle();
         let user = {
             username: this.state.username,
             password: this.state.password

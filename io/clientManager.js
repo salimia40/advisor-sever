@@ -5,13 +5,20 @@ const UserManager = require('./userManager');
 const Queue = require('../models/queue');
 const Blog = require('../models/blog');
 
+var onLoginEvent;
+var injector;
+
 class Client {
 
     constructor(onLogin, clientInjector, emit) {
         this.emit = emit;
         this.onLogin = onLogin;
+        onLoginEvent = onLogin;
+
         this.user = new UserManager(this.onLoginHandler, this.emit);
         this.clientInjector = clientInjector;
+        log.info(`clientIngector: ${clientInjector}`)
+        injector = clientInjector;
     }
 
     callAction(action) {
@@ -30,6 +37,8 @@ class Client {
     onLoginHandler(bool, userId) {
         // find unrecieved mesages and send
         Queue.findOne({ userId: userId }, (err, queue) => {
+            if (err) return;
+            if (queue == null) return;
             for (var i = (--queue.messages.length); i > 0; i--) {
                 let mId = queue.messages.pop();
                 Message.findById(mId, (err, message) => {
@@ -38,7 +47,10 @@ class Client {
             }
             queue.save();
         });
-        return this.onLogin(bool, userId);
+        // log.info(this);
+        // log.info(this.onLogin);
+        // return this.onLogin(bool, userId);
+        return onLoginEvent(bool, userId);
     };
 
     onDeleteMessage(data) {
@@ -51,7 +63,7 @@ class Client {
                 message.save((err, message) => {
                     if (err) return;
                     this.emit(Protocol.MESSAGE_SEND, message);
-                    this.clientInjector({
+                    clientInjector({
                         type: Protocol.ActionTypes.message,
                         userId: message.to,
                         data: {
@@ -72,7 +84,7 @@ class Client {
                 message.save((err, message) => {
                     if (err) return;
                     this.emit(Protocol.MESSAGE_SEND, message);
-                    this.clientInjector({
+                    injector({
                         type: Protocol.ActionTypes.message,
                         userId: message.to,
                         data: {
@@ -85,15 +97,15 @@ class Client {
     };
 
     onSendMessage(data) {
-        if (this.user.isLoggedin) {
             let message = new Message({
                 from: this.user.getUserId,
                 ...data
             });
             message.save((err, message) => {
-                if (err) return;
+                if (err) console.log(err);
+                console.log(message)
                 this.emit(Protocol.MESSAGE_SEND, message);
-                this.clientInjector({
+                injector({
                     type: Protocol.ActionTypes.message,
                     userId: message.to,
                     data: {
@@ -101,7 +113,6 @@ class Client {
                     }
                 })
             });
-        }
     };
 
     onGetMessage(data) {

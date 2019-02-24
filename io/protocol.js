@@ -1,6 +1,7 @@
 // user events
 module.exports.USER_LOGIN = 'user/login';
 module.exports.USER_REGISTER = 'user/register';
+module.exports.USER_REGISTER_Student = 'user/register/student';
 module.exports.USER_UPDATE_USER = 'user/update-user';
 module.exports.USER_UPDATE_EMAIL = 'user/update-email';
 module.exports.USER_UPDATE_NAME = 'user/update-name';
@@ -11,6 +12,22 @@ module.exports.USER_CHANGE_PASSWORD = 'user/change-password';
 module.exports.USER_FIND = 'user/find';
 module.exports.USER_GET = 'user/get';
 module.exports.USER_GET_ADVISOR = 'user/get/advisor';
+// groups
+module.exports.GROUP_CREATE = 'group/create';
+module.exports.GROUP_UPDATE = 'group/update';
+module.exports.GROUP_GET = 'group/get';
+module.exports.GROUP_GET_ALL = 'group/get/all';
+module.exports.GROUP_FIND = 'group/find';
+module.exports.GROUP_GET_OWNER = 'group/get/owner';
+module.exports.GROUP_GET_MEMBER = 'group/get/members';
+module.exports.GROUP_POST_GET = 'group/post/get';
+module.exports.GROUP_POST_GET_ALL = 'group/post/get/all';
+module.exports.GROUP_POST = 'group/post';
+module.exports.GROUP_POST_DELETE = 'group/post/delete';
+module.exports.GROUP_POST_EDIT = 'group/post/edit';
+module.exports.GROUP_COMMENT = 'group/comment';
+module.exports.GROUP_COMMENT_DELETE = 'group/comment/delete';
+module.exports.GROUP_COMMENT_EDIT = 'group/comment/edit';
 // message events
 module.exports.MESSAGE_SEND = 'message/send';
 module.exports.MESSAGE_GET = 'message/get';

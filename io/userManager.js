@@ -5,11 +5,14 @@ const Queue = require("../models/queue");
 const Student = require("../models/student");
 const Protocol = require("./protocol");
 
+var onLoginEvent;
+
 class UserManager {
 
     constructor(onLogin, emit) {
         this.emit = emit;
         this.onLogin = onLogin;
+        onLoginEvent = onLogin;
         this.user = null;
     }
 
@@ -44,7 +47,9 @@ class UserManager {
                     user.isOnline = true;
                     user.save();
                     this.user = user;
-                    this.onLogin(true, this.user.id);
+                    log.info(this.onLogin)
+                    // this.onLogin(true, this.user.id);
+                    onLoginEvent(true, this.user.id);
                     log.info(`user registered:   ${this.client.id}    ${user}`);
                     return this.emit(Protocol.USER_LOGIN, {
                         success: true,
@@ -67,6 +72,68 @@ class UserManager {
     /** @namespace data.role */
     /** @namespace data.advisorId */
     register(data) {
+        if(this.user !== null && this.user.role === Protocol.UserTypes.advisor){
+            log.info(`register this:   ${this}`);
+        let user = new User();
+        user.username = data.username;
+        user.email = {
+            email: data.email,
+            confirmed: false,
+            confirmCode: uuid()
+        };
+        user.password = data.password;
+        user.name = data.name;
+        user.role = data.role;
+        user.advisorId = this.user.id;
+
+        log.info(`a register attempt ${user}`);
+        User.findByUsername(data.username, (err, existingUser) => {
+            if (err) return this.emit(Protocol.USER_REGISTER_Student, {
+                success: false,
+                message: 'database error'
+            });
+            if (existingUser) return this.emit(Protocol.USER_REGISTER_Student, {
+                success: false,
+                message: 'user already exists'
+            });
+            else {
+                User.createUser(user, (err, newUser) => {
+                    if (err) {
+                        log.info(`user error:   ${err.message}`);
+                        return this.emit(Protocol.USER_LOGIN, {
+                            success: false,
+                            message: 'database error please try again'
+                        })
+                    }
+                    newUser.isOnline = true;
+                    newUser.save();
+                    log.info(`register this:   ${this.createInfoRecord}`);
+                    // log.info(`user logged in:   ${this.client.id} ${newUser}`);
+                    this.emit(Protocol.USER_REGISTER_Student, {
+                        success: true,
+                        user: newUser,
+                        message: 'user created and logged in'
+                    });
+
+                    // create user queue
+                    var queue = new Queue({
+                        userId: this.user._id
+                    });
+                    queue.save();
+                    // if user is an student create a student doc for it
+                    if (this.user.role === Protocol.UserTypes.student) {
+                        var student = new Student();
+                        student.username = this.user.username;
+                        student.userId = this.user._id;
+                        student.advisorId = this.user.advisorId;
+                        student.save(function (err, student) {
+                            this.emit(Protocol.STUDENT_GET, student);
+                        });
+                    }
+                });
+            }
+        });
+        }else{
         log.info(`register this:   ${this}`);
         let user = new User();
         user.username = data.username;
@@ -103,7 +170,7 @@ class UserManager {
                     newUser.save();
                     log.info(`register this:   ${this.createInfoRecord}`);
                     this.user = newUser;
-                    this.onLogin(true, this.user.id);
+                    onLoginEvent(true, this.user.id);
                     // log.info(`user logged in:   ${this.client.id} ${newUser}`);
                     this.emit(Protocol.USER_LOGIN, {
                         success: true,
@@ -129,6 +196,7 @@ class UserManager {
                 });
             }
         });
+    }
     };
 
     sendStudent(ignored) {
@@ -174,55 +242,66 @@ class UserManager {
 
     /** @namespace data.email */
     updateEmail(data) {
-        this.user.email.email = data.email;
-        this.user.email.confirmed = false;
-        this.user.email.confirmCode = uuid();
-        this.user.save((err, newUser) => {
-            this.emit(Protocol.USER_UPDATE_USER, {
-                user: newUser,
-                message: "email updated"
-            });
-            this.user = newUser;
-            this.sendConfirmEmail();
-        })
+        if (this.user != null) {
+            this.user.email = null;
+            this.user.email.email = data.email;
+            this.user.email.confirmed = false;
+            this.user.email.confirmCode = uuid();
+            this.user.save((err, newUser) => {
+                this.emit(Protocol.USER_UPDATE_USER, {
+                    user: newUser,
+                    message: "email updated"
+                });
+                this.user = newUser;
+                // this.sendConfirmEmail();
+            })
+        }
     };
 
     /** @namespace data.name */
     updateName(data) {
-        this.user.name = data.name;
-        this.user.save((err, newUser) => {
-            this.emit(Protocol.USER_UPDATE_USER, {
-                user: newUser,
-                message: "name updated"
-            });
-            this.user = newUser;
-        })
+        if (this.user != null) {
+
+            this.user.name = data.name;
+            this.user.save((err, newUser) => {
+                this.emit(Protocol.USER_UPDATE_USER, {
+                    user: newUser,
+                    message: "name updated"
+                });
+                this.user = newUser;
+            })
+        }
     };
 
     /** @namespace data.bio */
     updateBio(data) {
-        this.user.bio = data.bio;
-        this.user.save((err, newUser) => {
-            this.emit(Protocol.USER_UPDATE_USER, {
-                user: newUser,
-                message: "bio updated"
-            });
-            this.user = newUser;
-        })
+        if (this.user != null) {
+            this.user.bio = data.bio;
+            this.user.save((err, newUser) => {
+                this.emit(Protocol.USER_UPDATE_USER, {
+                    user: newUser,
+                    message: "bio updated"
+                });
+                this.user = newUser;
+            })
+        }
     };
 
     /** @namespace data.avatar.small */
     /** @namespace data.avatar.large */
     updateAvatar(data) {
-        this.user.avatar.small = data.avatar.small;
-        this.user.avatar.large = data.avatar.large;
-        this.user.save((err, newUser) => {
-            this.emit(Protocol.USER_UPDATE_USER, {
-                user: newUser,
-                message: "avatar updated"
-            });
-            this.user = newUser;
-        })
+        if (this.user != null) {
+            this.user.avatar.small = data.avatar.small;
+            this.user.avatar.large = data.avatar.large;
+            this.user.save((err, newUser) => {
+                this.emit(Protocol.USER_UPDATE_USER, {
+                    user: newUser,
+                    message: "avatar updated"
+                });
+                this.user = newUser;
+            })
+        }
+
     };
 
     /** @namespace data.newPassword */
@@ -247,7 +326,7 @@ class UserManager {
         return this.user.role === Protocol.UserTypes.advisor;
     }
     isLoggedin() {
-        return this.user !== null;
+        return this.user != null;
     }
 }
 
