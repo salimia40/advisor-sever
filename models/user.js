@@ -14,9 +14,16 @@ const userSchema = new Schema({
         required: true
     },
     email: {
-        email:{type: String},
-        confirmed: {type: Boolean, default: false},
-        confirmCode: {type: String},
+        email: {
+            type: String
+        },
+        confirmed: {
+            type: Boolean,
+            default: false
+        },
+        confirmCode: {
+            type: String
+        },
     },
     name: {
         type: String
@@ -25,8 +32,7 @@ const userSchema = new Schema({
         type: String
     },
     advisorId: {
-        type: Schema.Types.ObjectId,
-        // ref: 'userSchema'
+        type: String,
     },
     avatar: {
         small: {
@@ -40,7 +46,7 @@ const userSchema = new Schema({
         type: String,
         required: true,
         default: 'student',
-         // default: 'advisor'
+        // default: 'advisor'
     },
     isOnline: {
         type: Boolean,
@@ -48,70 +54,96 @@ const userSchema = new Schema({
     },
 });
 
-userSchema.index({username: 'text', email: 'text', name: 'text'},{default_language: 'none'});
+userSchema.index({
+    username: 'text',
+    email: 'text',
+    name: 'text'
+}, {
+    default_language: 'none'
+});
 
 
-userSchema.statics.findByUsername = function(username,callback){
-    return this.findOne({username: username},callback);
+userSchema.statics.findByUsername = function (username) {
+    return this.findOne({
+        username: username
+    })
 };
 
-userSchema.statics.isOnline = function(userId,callback){
-    return this.findById(userId,(err,user)=> {
-        if (err) return callback(false);
-        callback(user.isOnline);
-    });
+userSchema.statics.isOnline = function (userId) {
+    return new Promise((res, rej) => {
+        this.findById(userId, (err, user) => {
+            if (err) return res(false);
+            res(user.isOnline);
+        });
+    })
 };
 
-userSchema.statics.findUsers = function(q,callback){
+userSchema.statics.findUsers = function (q) {
     return this.find()
-    .or([{username: {$regex: q}},{email:{$regex: q}},{name:{$regex: q}}])
-    .exec(callback);
+        .or([{
+            username: {
+                $regex: q
+            }
+        }, {
+            email: {
+                $regex: q
+            }
+        }, {
+            name: {
+                $regex: q
+            }
+        }])
 };
 
 
-userSchema.methods.checkPassword = function (candidatePassword, callback) {
-    bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
-        if (err) callback(err, false);
-        callback(null, isMatch);
-    });
+userSchema.methods.checkPassword = function (candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.getAdvisor = function (callback) {
-    if(this.role === 'advisor') return callback(false,this);
-    this.model('User').findById(this.advisorId,callback)
+userSchema.methods.getAdvisor = function () {
+    return new Promise((res) => {
+        if (this.role === 'advisor') return res(this);
+        this.model('User').findById(this.advisorId).then(res)
+    })
 };
 
-userSchema.statics.changePassword = function(user,password, newPassword, callback){
-    bcrypt.compare(password, user.password, function (err, isMatch) {
-        if (err) return callback({success: false, message: 'failed to change password'});
+userSchema.query.students = function(userId){
+    return this.where(advisorId,userId)
+}
+
+userSchema.statics.changePassword = function (user, password, newPassword, callback) {
+    bcrypt.compare(password, user.password).then(isMatch => {
         if (isMatch) {
-            bcrypt.genSalt(10, function (err, salt) {
-                if (err) return callback({success: false, message: 'failed to change password'});
-                bcrypt.hash(newPassword, salt, function (err, hash) {
-                    if (err) return callback({success: false, message: 'failed to change password'});
-                    // noinspection JSPotentiallyInvalidUsageOfThis
-                    user.password = hash;
-                    user.save(function(err, newUser) {
-                        if (err) return callback({success: false, message: 'failed to change password'});
-                        else return callback({success: true, user: newUser, message: 'password changed successfully'});
+            bcrypt.hash(newPassword, 10).then(hash => {
+                user.password = hash;
+                user.save(function (err, newUser) {
+                    if (err) return callback({
+                        success: false,
+                        message: 'failed to change password'
+                    });
+                    else return callback({
+                        success: true,
+                        user: newUser,
+                        message: 'password changed successfully'
                     });
                 });
-            });
-        } else return callback({success: false, message: 'incorrect password'});
-    });
-
+            })
+        } else return callback({
+            success: false,
+            message: 'incorrect password'
+        });
+    })
 };
 
-userSchema.statics.createUser = function (user,callback) {
-    bcrypt.genSalt(10, function (err, salt) {
-        bcrypt.hash(user.password, salt, function(err, hash) {
-            // noinspection JSPotentiallyInvalidUsageOfThis
+userSchema.statics.createUser = function (user) {
+    return new Promise((res) => {
+        bcrypt.hash(user.password, 10).then(function (hash) {
             user.password = hash;
             log.info(hash);
             log.info(user);
-            user.save(callback);
+            user.save().then(res);
         });
-    });
+    })
 };
 
 const User = mongoose.model('User', userSchema);

@@ -69,7 +69,7 @@
          socket.emit(MESSAGE_SEND, {
              to: '5c5bb5ee5b5c9119e88c092d',
              content: {
-                 text: 'hello there',
+                 text: 'hi',
              }
          })
      }
@@ -108,4 +108,6 @@
  socket.emit(protocol.USER_LOGIN, {
      username: 'love',
      password: 'love'
+    //  username: 'puyaars',
+    //  password: 'rahil19'
  })

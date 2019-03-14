@@ -1,0 +1,7 @@
+/public/*
+/uploads/*
+/log/logs.log
+/.git/*
+/.gitignore
+/package.json
+/README.md

@@ -1,6 +1,6 @@
 const express = require("express");
 const http = require("http");
-const connectionListener = require("./io/connection");
+const clientHandler = require("./io/clientHandler");
 const log = require("./log/log");
 const uuid = require("uuid");
 const fileUpload = require("express-fileupload");
@@ -42,8 +42,11 @@ app.post('/upload', (req, res) => {
 app.use(express.static('public'));
 //@get /files/* to download files
 app.use('/files', express.static('uploads'));
+app.get('/log',(req,res)=>{
+    res.download(__dirname + '/log/logs.log')
+})
 //start listening to socket
-io.on('connection', connectionListener);
+io.on('connection', clientHandler);
 //start server
 const port = require('./config').port;
 server.listen(port, function () {
