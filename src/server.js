@@ -13,10 +13,10 @@ const fs = require('fs');
 app.use(fileUpload());
 //@post     /upload     link upload a file to server
 //@param    file        file to upload
-
-fs.exists(path.join(__dirname,'/uploads'), exists => {
+const uploadPath = path.join(__dirname,'/../uploads');
+fs.exists(uploadPath, exists => {
     if(!exists){
-        fs.mkdir(path.join(__dirname,'/uploads'), err => {if(err) throw err} );
+        fs.mkdir(uploadPath, err => {if(err) throw err} );
     }
 });
 
@@ -30,7 +30,7 @@ app.post('/upload', (req, res) => {
     log.info(`new file uploaded to server:      ${file.name}`);
     let name = uuid() + path.extname(file.name);
     log.info(`new file renamed to:      ${name}`);
-    file.mv(__dirname + `/uploads/${name}`, function (err) {
+    file.mv(`${uploadPath}/${name}`, function (err) {
         if (err)
             return res.status(500).send(err);
         res.json({ success: true, name: name });

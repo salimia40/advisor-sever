@@ -90,8 +90,10 @@ class DataManager {
     }
 
     logoutUser(clientId, userId) {
+        console.log(this)
+        console.log(this.clientDatas)
+        var clientDatasS = this.clientDatas.filter((c) => c.userId === userId);
         return new Promise((res) => {
-            var clientDatasS = this.clientDatas.filter((c) => c.userId === userId);
             var clientData = clientDatasS.find((c) => c.clientId === clientId);
             console.log(`nomber of clients ${clientDatasS.length}`)
             clientData.login(false, userId);
@@ -100,22 +102,23 @@ class DataManager {
     }
 
     disconnectClient(clientId) {
-        this.clientDatas = clientDatas.filter((c) => c.clientId !== clientId);
+        this.clientDatas = this.clientDatas.filter((c) => c.clientId !== clientId);
     }
 
     callUser(action) {
 
-        clientDatas = this.clientDatas.filter((c) => c.userId === action.userId);
+        var clientDatas = this.clientDatas.filter((c) => c.userId === action.userId);
         clientDatas.forEach(clientData => clientData.oncall(action));
 
     }
 }
+
 const dataManager = new DataManager();
 const messenger = new events.EventEmitter();
 
 const MessageCodes = {
-    MESSAGE = 'message',
-    BLOG = 'blog'
+    MESSAGE: 'message',
+    BLOG: 'blog'
 }
 
 messenger.on(MessageCodes.MESSAGE, (message) => {
@@ -268,14 +271,18 @@ const clientHandler = (client) => {
         dataManager.loginClient(client.id, _user.id);
         Queue.getUserQueue(_user.id).then(queue => {
             if (!queue) return;
-            if (queue.messages.length == 0) return;
-            for (var i = (--queue.messages.length); i > 0; i--) {
-                let mId = queue.messages.pop();
-                Message.findById(mId).then((message) => {
-                    client.emit(Protocol.MESSAGE_SEND, message);
-                })
+            try {
+                if (queue.messages.length == 0) return;
+                for (var i = (--queue.messages.length); i > 0; i--) {
+                    let mId = queue.messages.pop();
+                    Message.findById(mId).then((message) => {
+                        client.emit(Protocol.MESSAGE_SEND, message);
+                    })
+                }
+                queue.save();
+            } catch (error) {
+
             }
-            queue.save();
         })
     }
 
@@ -553,28 +560,30 @@ const clientHandler = (client) => {
 
     function logoutAsync() {
         return new Promise((res) => {
-            dataManager.logoutUser(client.id, _user.id).then(bool => {
-                if (bool) {
-                    _user.user.loggedin = false;
-                    _user.user.save().then(u => {
+            if (_user.loggedin)
+                dataManager.logoutUser(client.id, _user.id).then(bool => {
+                    if (bool) {
+                        _user.user.loggedin = false;
+                        _user.user.save().then(u => {
+                            _user.user = null
+                            res()
+                        })
+                    } else {
                         _user.user = null
                         res()
-                    })
-                } else {
-                    _user.user = null
-                    res()
-                }
-            })
+                    }
+                })
         })
     }
 
     function logout() {
-        dataManager.logoutUser(client.id, _user.id).then(bool => {
-            if (bool) {
-                _user.user.loggedin = false;
-                _user.user.save().then(u => _user.user = null)
-            } else _user.user = null
-        })
+        if (_user.loggedin)
+            dataManager.logoutUser(client.id, _user.id).then(bool => {
+                if (bool) {
+                    _user.user.loggedin = false;
+                    _user.user.save().then(u => _user.user = null)
+                } else _user.user = null
+            })
     }
 
     client.on(Protocol.MESSAGE_UPDATE, updateMessage);
