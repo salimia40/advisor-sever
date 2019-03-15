@@ -1,4 +1,3 @@
-require('dotenv').config();
 
 // module.exports.db_host = process.env.DB_HOST
 module.exports.db_url = 'mongodb://localhost:27017/advisor';
