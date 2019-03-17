@@ -4,7 +4,7 @@ const express = require('express'),
     fileUpload = require("express-fileupload"),
     log = require("./log/log"),
     path = require('path'),
-    storage = require('./storage')
+    storage = require('./storage')()
 
 router.use(fileUpload({
     useTempFiles : true,

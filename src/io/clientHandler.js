@@ -5,7 +5,9 @@ const uuid = require('uuid'),
     Student = require('../models/student'),
     Blog = require('../models/blog'),
     Queue = require('../models/queue'),
-    events = require('events');
+    events = require('events'),
+    Protocol = require('./protocol'),
+    Comment = require('../models/comment')
 
 class ClientData {
     constructor(clientId, oncall) {
@@ -20,57 +22,6 @@ class ClientData {
 
 }
 
-const Protocol = {
-    USER_LOGIN: 'user/login',
-    USER_REGISTER: 'user/register',
-    USER_REGISTER_Student: 'user/register/student',
-    USER_UPDATE_USER: 'user/update-user',
-    USER_UPDATE_EMAIL: 'user/update-email',
-    USER_UPDATE_NAME: 'user/update-name',
-    USER_UPDATE_AVATAR: 'user/update-avatar',
-    USER_UPDATE_BIO: 'user/update-bio',
-    USER_LOGOUT: 'user/logout',
-    USER_CHANGE_PASSWORD: 'user/change-password',
-    USER_FIND: 'user/find',
-    USER_GET: 'user/get',
-    USER_GET_ADVISOR: 'user/get/advisor',
-    GROUP_CREATE: 'group/create',
-    GROUP_UPDATE: 'group/update',
-    GROUP_GET: 'group/get',
-    GROUP_GET_ALL: 'group/get/all',
-    GROUP_FIND: 'group/find',
-    GROUP_GET_OWNER: 'group/get/owner',
-    GROUP_GET_MEMBER: 'group/get/members',
-    GROUP_POST_GET: 'group/post/get',
-    GROUP_POST_GET_ALL: 'group/post/get/all',
-    GROUP_POST: 'group/post',
-    GROUP_POST_DELETE: 'group/post/delete',
-    GROUP_POST_EDIT: 'group/post/edit',
-    GROUP_COMMENT: 'group/comment',
-    GROUP_COMMENT_DELETE: 'group/comment/delete',
-    GROUP_COMMENT_EDIT: 'group/comment/edit',
-    MESSAGE_SEND: 'message/send',
-    MESSAGE_GET: 'message/get',
-    MESSAGE_UPDATE: 'message/update',
-    MESSAGE_DELETE: 'message/delete',
-    STUDENT_GET: 'student/get',
-    STUDENT_UPDATE: 'student/update',
-    BLOG_SEND: 'blog/send',
-    BLOG_GET: 'blog/get',
-    BLOG_UPDATE: 'blog/update',
-    BLOG_DELETE: 'blog/delete',
-    BLOG_COMMENT_ADD: 'blog/comment/add',
-    BLOG_COMMENT_REMOVE: 'blog/comment/remove',
-    UserTypes: {
-        advisor: 'advisor',
-        student: 'student'
-    },
-    ActionTypes: {
-        message: 'message',
-        blog: 'blog'
-    },
-    DISCONNECT: 'disconnect'
-}
 
 class DataManager {
 
@@ -118,7 +69,8 @@ const messenger = new events.EventEmitter();
 
 const MessageCodes = {
     MESSAGE: 'message',
-    BLOG: 'blog'
+    BLOG: 'blog',
+    COMMENT: 'comment'
 }
 
 messenger.on(MessageCodes.MESSAGE, (message) => {
@@ -139,6 +91,11 @@ messenger.on(MessageCodes.MESSAGE, (message) => {
         else return queueMessage(message.from, message.id);
     })
 
+})
+
+messenger.on(MessageCodes.COMMENT,blog => {
+    // todo send user a notification
+    // soon to be implemented
 })
 
 messenger.on(MessageCodes.BLOG, blog => {
@@ -540,18 +497,39 @@ const clientHandler = (client) => {
     }
 
     function commentBlog(data) {
-        Blog.findById(data._id).then((blog) => {
-            data.comment.userId = _user.id;
-            blog.comments.push(data.comment);
-            blog.save().then((blog) => messenger.emit(MessageCodes.BLOG, blog))
+        Blog.findById(data.blogId).then((blog) => {
+            data.userId = _user.id;
+            // blog.comments.push(data.comment);
+            saveComment(data).then(cid => {
+                blog.comments.push(cid)
+                blog.save().then((blog) => messenger.emit(MessageCodes.BLOG, blog))
+            })
+        })
+    }
+
+    function saveComment(c) {
+        return new Promise((res) => {
+            var comment = new Comment(c);
+            comment.save().then(nc => res(nc.id))
         })
     }
 
     function removeCommentBlog(data) {
         Blog.findById(data._id, (err, blog) => {
-            blog.comments.filter((comment) => comment._id !== data.cId)
-            blog.save().then((blog) => messenger.emit(MessageCodes.BLOG, blog))
+            blog.comments.filter((comment) => comment !== data.cId)
+            deleteComment(cid)
+            blog.save().then((blog) => messenger.emit(MessageCodes.COMMENT, blog))
         })
+    }
+
+    function getComments(data){
+        Comment.find().byBlog(data.blogId).then(cs => cs.forEach(
+            c => client.emit(Protocol.BLOG_GET_COMMENT,c)
+        ))
+    }
+
+    function deleteComment(cid) {
+        Comment.findByIdAndDelete(cid).exec();
     }
 
     function disconnect() {
@@ -591,6 +569,7 @@ const clientHandler = (client) => {
     client.on(Protocol.MESSAGE_DELETE, deleteMessage);
     client.on(Protocol.MESSAGE_GET, getMessages);
     client.on(Protocol.BLOG_GET, getBlogs);
+    client.on(Protocol.BLOG_GET_COMMENT, getComments);
     client.on(Protocol.BLOG_UPDATE, updateBlog);
     client.on(Protocol.BLOG_DELETE, deleteBlog);
     client.on(Protocol.BLOG_COMMENT_ADD, commentBlog);
