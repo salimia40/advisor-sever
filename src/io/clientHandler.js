@@ -3,6 +3,8 @@ const uuid = require('uuid'),
     User = require('../models/user'),
     Message = require('../models/message'),
     Student = require('../models/student'),
+    Group = require('../models/group'),
+    Member = require('../models/member'),
     Blog = require('../models/blog'),
     Queue = require('../models/queue'),
     events = require('events'),
@@ -93,7 +95,7 @@ messenger.on(MessageCodes.MESSAGE, (message) => {
 
 })
 
-messenger.on(MessageCodes.COMMENT,blog => {
+messenger.on(MessageCodes.COMMENT, blog => {
     // todo send user a notification
     // soon to be implemented
 })
@@ -129,7 +131,8 @@ function queueBlog(uid, blogId) {
             })
             queue.save();
         }
-        queue.blogs.push(blogId)
+        if (!queue.blogs) queue.blogs = [blogId]
+        else queue.blogs.push(blogId)
         queue.save();
     })
 }
@@ -142,7 +145,8 @@ function queueMessage(uid, messageId) {
             })
             queue.save();
         }
-        queue.messages.push(messageId)
+        if (!queue.messages) queue.messages = [messageId]
+        else queue.messages.push(messageId)
         queue.save();
     })
 }
@@ -522,9 +526,9 @@ const clientHandler = (client) => {
         })
     }
 
-    function getComments(data){
+    function getComments(data) {
         Comment.find().byBlog(data.blogId).then(cs => cs.forEach(
-            c => client.emit(Protocol.BLOG_GET_COMMENT,c)
+            c => client.emit(Protocol.BLOG_GET_COMMENT, c)
         ))
     }
 
@@ -554,7 +558,7 @@ const clientHandler = (client) => {
         })
     }
 
-    function logout() {
+    function logout(data) {
         if (_user.loggedin)
             dataManager.logoutUser(client.id, _user.id).then(bool => {
                 if (bool) {
@@ -562,6 +566,127 @@ const clientHandler = (client) => {
                     _user.user.save().then(u => _user.user = null)
                 } else _user.user = null
             })
+    }
+
+
+    // group actions
+
+    function createGroup(data) {
+        Group.findGroup(gata.name).then(g => {
+            if (g) {
+                // group exists
+            }
+            var group = new Group({
+                ...data
+            })
+            group.save().then(gr => {
+                addOwnerMember(gr._id)
+                // send group
+            })
+        })
+    }
+
+
+    function addOwnerMember(gid) {
+        var member = new Member({
+            role: Protocol.GroupRoles.owner,
+            groupId: gid,
+            userId: _user.id
+        })
+        member.save().then(m => {
+            // send member
+        })
+    }
+
+    function updateGroup(data) {
+        //check if user can
+        Member.find({
+            userId: uid,
+            groupId: gid
+        }).then(m => {
+            if (m.role == Protocol.GroupRoles.owner || m.role == Protocol.GroupRoles.owner) {
+                Group.findGroup(data.name).then(group => {
+                    delete data.name;
+                    Object.assign(group, ...data)
+                    group.save().then(g => {
+                        // send group
+                    })
+                })
+            } else {
+                // cant attemt
+            }
+        })
+    }
+
+    function getGroup(data) {
+        if (data.gid) {
+            Group.findById(data.gid).then(group => {
+                // send group
+            })
+        }
+        if (data.name) {
+            Group.findGroup(data.name).then(group => {
+                // send group
+            })
+        }
+    }
+
+    function getAllGroups(data) {
+        Member.find({
+            userId: _user.id
+        }).then(members => {
+            members.forEach(m => {
+                Group.findById(m.groupId).then(g => {
+                    // send group
+                })
+            })
+        })
+    }
+
+    function findGroup(data) {
+        Group.find().search(data.querry).then(gs => gs.forEach(g => {
+            // send group
+        }))
+    }
+
+    function getGroupOwner(data) {
+        Member.findOne({
+            groupId: data.gid,
+            role: Protocol.GroupRoles.owner
+        }).then(owner => {
+            // send member
+        })
+    }
+
+    function getGroupMemmbers(data) {
+        Member.find({
+            groupId: data.gid
+        }).then(ms => ms.forEach(m => {
+            // send member
+        }))
+    }
+
+    function joinGroup(data) {
+        var member = new Member({
+            role: Protocol.GroupRoles.member,
+            groupId: data.gid,
+            userId: _user.id
+        })
+        member.save().then(m => {
+            // send member
+        })
+    }
+
+    function addtoGroup(data) {
+        var member = new Member({
+            role: Protocol.GroupRoles.member,
+            groupId: data.gid,
+            userId: data.uid
+        })
+        member.save().then(m => {
+            // notify user
+            // future plan :)
+        })
     }
 
     client.on(Protocol.MESSAGE_UPDATE, updateMessage);

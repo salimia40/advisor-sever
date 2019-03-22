@@ -12,13 +12,18 @@ module.exports = {
     USER_FIND: 'user/find',
     USER_GET: 'user/get',
     USER_GET_ADVISOR: 'user/get/advisor',
+
     GROUP_CREATE: 'group/create',
     GROUP_UPDATE: 'group/update',
     GROUP_GET: 'group/get',
     GROUP_GET_ALL: 'group/get/all',
     GROUP_FIND: 'group/find',
+    GROUP_JOIN: 'group/join',
+    GROUP_ADD: 'group/add',
+    GROUP_LEAVE: 'group/leave',
+    GROUP_REMOVE: 'group/remove',
     GROUP_GET_OWNER: 'group/get/owner',
-    GROUP_GET_MEMBER: 'group/get/members',
+    GROUP_GET_MEMBERS: 'group/get/members',
     GROUP_POST_GET: 'group/post/get',
     GROUP_POST_GET_ALL: 'group/post/get/all',
     GROUP_POST: 'group/post',
@@ -27,6 +32,7 @@ module.exports = {
     GROUP_COMMENT: 'group/comment',
     GROUP_COMMENT_DELETE: 'group/comment/delete',
     GROUP_COMMENT_EDIT: 'group/comment/edit',
+
     MESSAGE_SEND: 'message/send',
     MESSAGE_GET: 'message/get',
     MESSAGE_UPDATE: 'message/update',
@@ -47,6 +53,11 @@ module.exports = {
     ActionTypes: {
         message: 'message',
         blog: 'blog'
+    },
+    GroupRoles: {
+        owner: 'owner',
+        admin: 'admin',
+        member: 'member'
     },
     DISCONNECT: 'disconnect'
 }

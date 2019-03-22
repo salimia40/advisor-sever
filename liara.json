@@ -1,4 +1,4 @@
 {
-  "volume": "/app/uploads",
+  "platform": "node",
   "port": 5000
 }
