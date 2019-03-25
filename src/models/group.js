@@ -31,7 +31,7 @@ groupSchema.query.search = function (q) {
         }])
         .sort({
             date: -1
-        }).limit(limit).skip(limit * --page);
+        });
 }
 
 const Group = mongoose.model('Group', groupSchema);

@@ -9,7 +9,8 @@ const uuid = require('uuid'),
     Queue = require('../models/queue'),
     events = require('events'),
     Protocol = require('./protocol'),
-    Comment = require('../models/comment')
+    Comment = require('../models/comment'),
+    GroupEvent = require('../models/gEvent')
 
 class ClientData {
     constructor(clientId, oncall) {
@@ -72,7 +73,13 @@ const messenger = new events.EventEmitter();
 const MessageCodes = {
     MESSAGE: 'message',
     BLOG: 'blog',
-    COMMENT: 'comment'
+    COMMENT: 'comment',
+    NOTIFICATION: 'notification'
+}
+
+const NotificationCodes = {
+    ADDED: 'added',
+    REMOVED: "removed"
 }
 
 messenger.on(MessageCodes.MESSAGE, (message) => {
@@ -95,10 +102,6 @@ messenger.on(MessageCodes.MESSAGE, (message) => {
 
 })
 
-messenger.on(MessageCodes.COMMENT, blog => {
-    // todo send user a notification
-    // soon to be implemented
-})
 
 messenger.on(MessageCodes.BLOG, blog => {
     User.find().students(blog.userId).then(users => {
@@ -122,6 +125,32 @@ messenger.on(MessageCodes.BLOG, blog => {
         } else queueBlog(user.id, blog.id);
     })
 })
+
+
+messenger.on(MessageCodes.NOTIFICATION, (userId, notification) => {
+    // todo notification
+    User.isOnline(userId).then(bool => {
+        if (bool) return dataManager.callUser({
+            type: Protocol.ActionTypes.notify,
+            notification: notification
+        })
+        else return queueNotification(userId, notification);
+    })
+})
+
+function queueNotification(uid, n) {
+    Queue.getUserQueue(uid).then(queue => {
+        if (!queue) {
+            queue = new Queue({
+                userId: uid
+            })
+            queue.save();
+        }
+        if (!queue.notifications) queue.blogs = [n]
+        else queue.notifications.push(n)
+        queue.save();
+    })
+}
 
 function queueBlog(uid, blogId) {
     Queue.getUserQueue(uid).then(queue => {
@@ -149,6 +178,25 @@ function queueMessage(uid, messageId) {
         else queue.messages.push(messageId)
         queue.save();
     })
+}
+
+const groupEvents = {
+    joined: 'joined',
+    left: 'left',
+    added: 'added',
+    removed: 'removed',
+    created: 'created',
+    updated: 'updated',
+}
+
+function recordEvent(e, gid, subUser, obUser) {
+    var ge = new GroupEvent({
+        groupId: gid,
+        subUser: subUser,
+        obUser: obUser,
+        event: e
+    })
+    ge.save()
 }
 
 class USER {
@@ -197,6 +245,11 @@ const clientHandler = (client) => {
                     client.emit(Protocol.BLOG_GET, blog)
                 )
                 return;
+
+            case Protocol.ActionTypes.notify:
+                client.emit(Protocol.NOTIFICATION, notification)
+                return;
+                // todo notification
             default:
                 return;
         }
@@ -240,6 +293,8 @@ const clientHandler = (client) => {
                         client.emit(Protocol.MESSAGE_SEND, message);
                     })
                 }
+                // blogs
+                // notifications
                 queue.save();
             } catch (error) {
 
@@ -519,10 +574,10 @@ const clientHandler = (client) => {
     }
 
     function removeCommentBlog(data) {
-        Blog.findById(data._id, (err, blog) => {
-            blog.comments.filter((comment) => comment !== data.cId)
-            deleteComment(cid)
-            blog.save().then((blog) => messenger.emit(MessageCodes.COMMENT, blog))
+        Blog.findById(data.bid).then((blog) => {
+            blog.comments = blog.comments.filter((comment) => comment !== data.cid)
+            deleteComment(data.cid)
+            blog.save().then((blog) => messenger.emit(MessageCodes.BLOG, blog))
         })
     }
 
@@ -582,6 +637,8 @@ const clientHandler = (client) => {
             group.save().then(gr => {
                 addOwnerMember(gr._id)
                 // send group
+                // created event
+                recordEvent(groupEvents.left, gr.id, _user.id, null)
             })
         })
     }
@@ -600,22 +657,48 @@ const clientHandler = (client) => {
 
     function updateGroup(data) {
         //check if user can
-        Member.find({
-            userId: uid,
-            groupId: gid
-        }).then(m => {
-            if (m.role == Protocol.GroupRoles.owner || m.role == Protocol.GroupRoles.owner) {
-                Group.findGroup(data.name).then(group => {
-                    delete data.name;
-                    Object.assign(group, ...data)
-                    group.save().then(g => {
-                        // send group
-                    })
+        if (data.name) {
+            Group.findGroup(data.name).then(group => {
+                Member.find({
+                    userId: _user.id,
+                    groupId: group.id
+                }).then(m => {
+                    if (m.role == Protocol.GroupRoles.owner || m.role == Protocol.GroupRoles.owner) {
+                        delete data.name;
+                        Object.assign(group, ...data)
+                        group.save().then(g => {
+                            // send group
+                            // updated event
+                            recordEvent(groupEvents.updated, g.id, _user.id, null)
+                        })
+
+                    } else {
+                        // cant attemt
+                    }
                 })
-            } else {
-                // cant attemt
-            }
-        })
+            })
+        } else {
+            Group.findById(data.gid).then(group => {
+                Member.find({
+                    userId: _user.id,
+                    groupId: group.id
+                }).then(m => {
+                    if (m.role == Protocol.GroupRoles.owner || m.role == Protocol.GroupRoles.owner) {
+                        delete data.name;
+                        Object.assign(group, ...data)
+                        group.save().then(g => {
+                            // send group
+                            // updated event
+                            recordEvent(groupEvents.updated, data.gid, _user.id, null)
+                        })
+
+                    } else {
+                        // cant attemt
+                    }
+                })
+            })
+        }
+
     }
 
     function getGroup(data) {
@@ -674,6 +757,8 @@ const clientHandler = (client) => {
         })
         member.save().then(m => {
             // send member
+            // joined event
+            recordEvent(groupEvents.joined, data.gid, _user.id, null)
         })
     }
 
@@ -684,10 +769,67 @@ const clientHandler = (client) => {
             userId: data.uid
         })
         member.save().then(m => {
+            // send member
             // notify user
-            // future plan :)
+            messenger.emit(MessageCodes.NOTIFICATION, _user.id, {
+                type: NotificationCodes.ADDED,
+                userId: _user.id,
+                groupId: m.groupId
+            })
+            // added event
+            recordEvent(groupEvents.added, data.gid, _user.id, data.uid)
+
         })
     }
+
+    function removeMember(data) {
+        // only id admin
+        Member.find({
+            userId: _user.id,
+            groupId: data.gid
+        }).then(m => {
+            if (m.role == Protocol.GroupRoles.owner || m.role == Protocol.GroupRoles.owner) {
+                Member.findOneAndDelete({
+                    groupId: data.gid,
+                    userId: data.uid
+                }).exec((err, res) => {
+                    if (err) {
+                        // failed
+                    } else {
+                        // send ok
+
+                        // notify user
+                        messenger.emit(MessageCodes.NOTIFICATION, _user.id, {
+                            type: NotificationCodes.REMOVED,
+                            userId: _user.id,
+                            groupId: m.groupId
+                        })
+                        // removed event
+                        recordEvent(groupEvents.removed, data.gid, _user.id, data.uid)
+                    }
+                })
+            } else {
+                // cant attemt
+            }
+        })
+    }
+
+    function leaveGroup(data) {
+        Member.findOneAndDelete({
+            groupId: data.gid,
+            userId: _user.id
+        }).exec((err, res) => {
+            if (err) {
+                // failed
+            } else {
+                // send ok
+                // left event
+                recordEvent(groupEvents.left, data.gid, _user.id, null)
+            }
+        })
+    }
+
+
 
     client.on(Protocol.MESSAGE_UPDATE, updateMessage);
     client.on(Protocol.MESSAGE_SEND, sendMessage);

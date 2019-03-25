@@ -46,13 +46,17 @@ module.exports = {
     BLOG_DELETE: 'blog/delete',
     BLOG_COMMENT_ADD: 'blog/comment/add',
     BLOG_COMMENT_REMOVE: 'blog/comment/remove',
+
+    NOTIFICATION: 'notification',
+
     UserTypes: {
         advisor: 'advisor',
         student: 'student'
     },
     ActionTypes: {
         message: 'message',
-        blog: 'blog'
+        blog: 'blog',
+        notify: 'notify'
     },
     GroupRoles: {
         owner: 'owner',

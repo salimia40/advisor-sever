@@ -1,7 +1,6 @@
 const mongoose = require("./init");
 
 const Schema = mongoose.Schema;
-console.log(mongoose);
 const memberSchema = new Schema({
     role: {
         type: String,
