@@ -73,7 +73,7 @@ const messenger = new events.EventEmitter();
 const MessageCodes = {
     MESSAGE: 'message',
     BLOG: 'blog',
-    COMMENT: 'comment',
+    MEMBER: 'member',
     NOTIFICATION: 'notification'
 }
 
@@ -100,6 +100,19 @@ messenger.on(MessageCodes.MESSAGE, (message) => {
         else return queueMessage(message.from, message.id);
     })
 
+})
+
+messenger.on(MessageCodes.MEMBER, (member) => {
+    User.isOnline(member.userId).then(bool => {
+        if (bool) {
+            dataManager.callUser({
+                type: Protocol.ActionTypes.member,
+                memberId: member.id
+            })
+        } else {
+            queueMember(member.userId, member.id)
+        }
+    })
 })
 
 
@@ -180,6 +193,20 @@ function queueMessage(uid, messageId) {
     })
 }
 
+function queueMember(uid, mid) {
+    Queue.getUserQueue(uid).then(queue => {
+        if (!queue) {
+            queue = new Queue({
+                userId: uid
+            })
+            queue.save();
+        }
+        if (!queue.members) queue.members = [mid]
+        else queue.members.push(mid)
+        queue.save();
+    })
+}
+
 const groupEvents = {
     joined: 'joined',
     left: 'left',
@@ -250,6 +277,7 @@ const clientHandler = (client) => {
                 client.emit(Protocol.NOTIFICATION, notification)
                 return;
                 // todo notification
+                // todo members
             default:
                 return;
         }
@@ -769,7 +797,9 @@ const clientHandler = (client) => {
             userId: data.uid
         })
         member.save().then(m => {
-            // send member
+            // send member next will do it
+            // queue member
+            messenger.emit(MessageCodes.MEMBER, m)
             // notify user
             messenger.emit(MessageCodes.NOTIFICATION, _user.id, {
                 type: NotificationCodes.ADDED,

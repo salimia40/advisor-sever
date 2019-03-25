@@ -7,6 +7,7 @@ const queueSchema = new Schema({
     },
     messages: [String],
     blogs: [String],
+    members: [String],
 
     notifications: [{
         type: String,

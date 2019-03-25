@@ -56,7 +56,8 @@ module.exports = {
     ActionTypes: {
         message: 'message',
         blog: 'blog',
-        notify: 'notify'
+        notify: 'notify',
+        member: 'member'
     },
     GroupRoles: {
         owner: 'owner',
