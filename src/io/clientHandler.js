@@ -829,6 +829,17 @@ const clientHandler = (client) => {
         })
     }
 
+    function getGroupEvents(data) {
+        GroupEvent.find({
+            groupId: data.gid
+        }).sort({
+            date: -1
+        }).limit(100).then(events => events.forEach(
+            e => {
+                // send event
+            }
+        ))
+    }
 
 
     client.on(Protocol.MESSAGE_UPDATE, updateMessage);
