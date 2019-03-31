@@ -10,7 +10,9 @@ const uuid = require('uuid'),
     events = require('events'),
     Protocol = require('./protocol'),
     Comment = require('../models/comment'),
-    GroupEvent = require('../models/gEvent')
+    GroupEvent = require('../models/gEvent'),
+    GroupPost = require('../models/groupPost'),
+    GroupComment = require('../models/gComment')
 
 class ClientData {
     constructor(clientId, oncall) {
@@ -74,7 +76,8 @@ const MessageCodes = {
     MESSAGE: 'message',
     BLOG: 'blog',
     MEMBER: 'member',
-    NOTIFICATION: 'notification'
+    NOTIFICATION: 'notification',
+    groupDeletion: "groupDeletion"
 }
 
 const NotificationCodes = {
@@ -149,6 +152,29 @@ messenger.on(MessageCodes.NOTIFICATION, (userId, notification) => {
         })
         else return queueNotification(userId, notification);
     })
+})
+
+messenger.on(MessageCodes.groupDeletion, ownerId, groupId => {
+    Member.find({
+        groupId: groupId
+    }).then(ms => ms.forEach(m => {
+        User.isOnline(m.userId).then(bool => {
+            var notification = {
+                type: NotificationCodes.REMOVED,
+                userId: ownerId,
+                groupId: m.groupId
+            }
+            if (bool) return dataManager.callUser({
+                type: Protocol.ActionTypes.notify,
+                notification: notification
+            })
+            else return queueNotification(m.userId, notification);
+        })
+        GroupComment.deleteMany({
+            memberId: m.id
+        }).exec()
+        Member.findByIdAndDelete(m.id);
+    }))
 })
 
 function queueNotification(uid, n) {
@@ -801,7 +827,7 @@ const clientHandler = (client) => {
             // queue member
             messenger.emit(MessageCodes.MEMBER, m)
             // notify user
-            messenger.emit(MessageCodes.NOTIFICATION, _user.id, {
+            messenger.emit(MessageCodes.NOTIFICATION, data.uid, {
                 type: NotificationCodes.ADDED,
                 userId: _user.id,
                 groupId: m.groupId
@@ -829,7 +855,7 @@ const clientHandler = (client) => {
                         // send ok
 
                         // notify user
-                        messenger.emit(MessageCodes.NOTIFICATION, _user.id, {
+                        messenger.emit(MessageCodes.NOTIFICATION, data.uid, {
                             type: NotificationCodes.REMOVED,
                             userId: _user.id,
                             groupId: m.groupId
@@ -859,6 +885,32 @@ const clientHandler = (client) => {
         })
     }
 
+    function deleteGroup(data) {
+        // only id admin
+        Member.find({
+            userId: _user.id,
+            groupId: data.gid
+        }).then(m => {
+            if (m.role == Protocol.GroupRoles.owner || m.role == Protocol.GroupRoles.owner) {
+
+                GroupEvent.deleteMany({
+                    groupId: data.gid
+                }).exec();
+
+                GroupPost.deleteMany({
+                    groupId: data.gid
+                }).exec();
+
+                // queue deleted members
+                // it also deletes comments
+                messenger.emit(MessageCodes.groupDeletion, _user.id, m.groupId)
+
+            } else {
+                // cant attemt
+            }
+        })
+    }
+
     function getGroupEvents(data) {
         GroupEvent.find({
             groupId: data.gid
@@ -871,6 +923,126 @@ const clientHandler = (client) => {
         ))
     }
 
+
+    function addGPost(data) {
+        var post = new GroupPost({}, {
+            ...data
+        })
+        p.followers = [_user.id]
+        post.save().then(p => {
+            // send post
+        })
+    }
+
+    function editPost(data) {
+        GroupPost.findById(data.pid).then(post => {
+            delete data.pid
+            Object.assign(post, data)
+            post.save().then(p => {
+                // send post
+                // notify followers
+            })
+        })
+    }
+
+    function deleteGPost(data) {
+        // notify all members to delete post and ites comments
+        GroupPost.findById(data.pid).then(post => {
+            delete data.pid
+            post.deleted = true
+            post.save().then(p => {
+                // send post
+            })
+        })
+    }
+
+    function getGpost(data) {
+        GroupPost.findById(data.pid).then(post => {
+            // send post
+        })
+    }
+
+    function getUserGPosts(data) {
+        GroupPost.find({
+            memberId: data.mid,
+            groupId: data.gid,
+            deleted: false
+        }).then(ps => ps.forEach(p => {
+            // send post
+        }))
+
+    }
+
+    function getAllGPosts(data) {
+        GroupPost.find({
+                groupId: data.gid,
+                deleted: false
+            }).sort({
+                date: -1
+            }).limit(200)
+            .then(ps => ps.forEach(p => {
+                // send post
+            }))
+
+    }
+
+
+    function addGComment(data) {
+        var comment = new GroupComment({
+            ...data
+        })
+        comment.save().then(c => {
+            GroupPost.findById(data.gPostId).then(p => {
+                // follow post
+                if (p.followers.indexOf(_user.id) == -1) p.followers.push(_user.id)
+                if (p.comments) p.comments.push(c.id)
+                else p.comments = [c.id]
+            })
+            // send comment
+            // notify followers
+        })
+    }
+
+    function editGCmomment(data) {
+        GroupComment.findById(data.cid).then(c => {
+            delete data.cid
+            Object.assign(c, data)
+            c.save().then(co => {
+                // send comment
+            })
+        })
+    }
+
+    function unfollowPost(data) {
+        GroupPost.findById(data.pid).then(post => {
+            delete data.pid
+            var i = post.followers.indexOf(_user.id)
+            post.followers.slice(i, i)
+            post.save().then(p => {})
+        })
+    }
+
+    // if already liked unlike the post
+    function likePost(data) {
+        GroupPost.findById(data.pid).then(post => {
+            if (post.likes) {
+                var i = post.likes.indexOf(_user.id)
+                if (i == -1) post.likes.slice(i, i)
+                else post.likes.push(_user.id)
+            } else post.likes = [_user.id]
+            post.save().then(p => {
+                // send p
+            })
+        })
+    }
+
+    function getGPcomments(data) {
+        GroupComment.find({
+            gPostId: data.pid
+        }).then(cs => cs.forEach(c => {
+            // send comment
+        }))
+    }
 
     client.on(Protocol.MESSAGE_UPDATE, updateMessage);
     client.on(Protocol.MESSAGE_SEND, sendMessage);
