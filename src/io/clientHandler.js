@@ -82,7 +82,12 @@ const MessageCodes = {
 
 const NotificationCodes = {
     ADDED: 'added',
-    REMOVED: "removed"
+    REMOVED: "removed",
+    Blog: "blog",
+    Blog_comment: "blog/comment",
+    Post: "post",
+    Post_edit: "post/edit",
+    Post_comment: "post/comment",
 }
 
 messenger.on(MessageCodes.MESSAGE, (message) => {
@@ -121,6 +126,10 @@ messenger.on(MessageCodes.MEMBER, (member) => {
 
 messenger.on(MessageCodes.BLOG, blog => {
     User.find().students(blog.userId).then(users => {
+        var notification = {
+            type: NotificationCodes.Blog,
+            blogId: blog.id
+        }
         users.forEach(user => {
             if (user.isOnline) {
                 dataManager.callUser({
@@ -128,7 +137,16 @@ messenger.on(MessageCodes.BLOG, blog => {
                     userId: user.id,
                     blogId: blog.id
                 })
-            } else queueBlog(user.id, blog.id);
+                dataManager.callUser({
+                    type: Protocol.ActionTypes.notify,
+                    notification: notification
+                })
+
+            } else {
+                queueNotification(userId, notification)
+                queueBlog(user.id, blog.id)
+            };
+
         })
     })
     User.findById(blog.userId).then(user => {
@@ -154,7 +172,7 @@ messenger.on(MessageCodes.NOTIFICATION, (userId, notification) => {
     })
 })
 
-messenger.on(MessageCodes.groupDeletion, ownerId, groupId => {
+messenger.on(MessageCodes.groupDeletion, (ownerId, groupId) => {
     Member.find({
         groupId: groupId
     }).then(ms => ms.forEach(m => {
@@ -548,7 +566,7 @@ const clientHandler = (client) => {
         } else {
             Message.find().getUserChats(userId, data.other).then((messages) => {
                 messages.forEach((message) => {
-                    this.emit(Protocol.MESSAGE_SEND, message);
+                    client.emit(Protocol.MESSAGE_SEND, message);
                 });
             });
         }
@@ -557,7 +575,7 @@ const clientHandler = (client) => {
     function deleteMessage(data) {
         //todo confirm that user is message owner
         Message.findById(data.messageId).then((message) => {
-            if (message.from == this.user.getUserId()) {
+            if (message.from == _user.id) {
                 message.content = null;
                 message.deleted = true;
                 message.save().then((message) => {
@@ -570,7 +588,7 @@ const clientHandler = (client) => {
     function updateMessage(data) {
 
         Message.findById(data.messageId).then((message) => {
-            if (message.from == this.user.getUserId()) {
+            if (message.from == _user.id) {
                 message.content = data.content;
                 message.updated = true;
                 message.save().then((message) => {
@@ -588,9 +606,10 @@ const clientHandler = (client) => {
         Blog.findById(data._id).then((blog) => {
             blog.title = data.title;
             blog.document = data.document;
-            blog.save().then((blog) =>
+            blog.save().then((blog) => {
+                // notify stydents that blog updated
                 messenger.emit(MessageCodes.BLOG, blog)
-            )
+            })
         })
     }
 
@@ -615,7 +634,9 @@ const clientHandler = (client) => {
             // blog.comments.push(data.comment);
             saveComment(data).then(cid => {
                 blog.comments.push(cid)
-                blog.save().then((blog) => messenger.emit(MessageCodes.BLOG, blog))
+                blog.save().then((blog) =>
+                    messenger.emit(MessageCodes.BLOG, blog)
+                )
             })
         })
     }
@@ -684,6 +705,10 @@ const clientHandler = (client) => {
         Group.findGroup(gata.name).then(g => {
             if (g) {
                 // group exists
+                client.emit(Protocol.GROUP_CREATE, {
+                    success: false,
+                    message: 'group already exists'
+                })
             }
             var group = new Group({
                 ...data
@@ -691,8 +716,13 @@ const clientHandler = (client) => {
             group.save().then(gr => {
                 addOwnerMember(gr._id)
                 // send group
+                client.emit(Protocol.GROUP_CREATE, {
+                    success: true,
+                    message: 'group created'
+                })
+                client.emit(Protocol.GROUP_GET, gr)
                 // created event
-                recordEvent(groupEvents.left, gr.id, _user.id, null)
+                recordEvent(groupEvents.created, gr.id, _user.id, null)
             })
         })
     }
@@ -706,6 +736,7 @@ const clientHandler = (client) => {
         })
         member.save().then(m => {
             // send member
+            client.emit(Protocol.GROUP_GET_MEMBERS, m)
         })
     }
 
@@ -722,6 +753,7 @@ const clientHandler = (client) => {
                         Object.assign(group, ...data)
                         group.save().then(g => {
                             // send group
+                            client.emit(Protocol.GROUP_GET, g)
                             // updated event
                             recordEvent(groupEvents.updated, g.id, _user.id, null)
                         })
@@ -742,6 +774,8 @@ const clientHandler = (client) => {
                         Object.assign(group, ...data)
                         group.save().then(g => {
                             // send group
+                            client.emit(Protocol.GROUP_GET, g)
+
                             // updated event
                             recordEvent(groupEvents.updated, data.gid, _user.id, null)
                         })
@@ -759,11 +793,13 @@ const clientHandler = (client) => {
         if (data.gid) {
             Group.findById(data.gid).then(group => {
                 // send group
+                client.emit(Protocol.GROUP_GET, group)
             })
         }
         if (data.name) {
             Group.findGroup(data.name).then(group => {
                 // send group
+                client.emit(Protocol.GROUP_GET, group)
             })
         }
     }
@@ -775,6 +811,7 @@ const clientHandler = (client) => {
             members.forEach(m => {
                 Group.findById(m.groupId).then(g => {
                     // send group
+                    client.emit(Protocol.GROUP_GET, g)
                 })
             })
         })
@@ -783,6 +820,7 @@ const clientHandler = (client) => {
     function findGroup(data) {
         Group.find().search(data.querry).then(gs => gs.forEach(g => {
             // send group
+            client.emit(Protocol.GROUP_GET, g)
         }))
     }
 
@@ -792,6 +830,7 @@ const clientHandler = (client) => {
             role: Protocol.GroupRoles.owner
         }).then(owner => {
             // send member
+            client.emit(Protocol.GROUP_GET_MEMBERS, m)
         })
     }
 
@@ -800,6 +839,7 @@ const clientHandler = (client) => {
             groupId: data.gid
         }).then(ms => ms.forEach(m => {
             // send member
+            client.emit(Protocol.GROUP_GET_MEMBERS, m)
         }))
     }
 
@@ -811,6 +851,7 @@ const clientHandler = (client) => {
         })
         member.save().then(m => {
             // send member
+            client.emit(Protocol.GROUP_GET_MEMBERS, m)
             // joined event
             recordEvent(groupEvents.joined, data.gid, _user.id, null)
         })
@@ -823,7 +864,8 @@ const clientHandler = (client) => {
             userId: data.uid
         })
         member.save().then(m => {
-            // send member next will do it
+            client.emit(Protocol.GROUP_GET_MEMBERS, m)
+            // send member for added user next will do it
             // queue member
             messenger.emit(MessageCodes.MEMBER, m)
             // notify user
@@ -851,9 +893,18 @@ const clientHandler = (client) => {
                 }).exec((err, res) => {
                     if (err) {
                         // failed
+                        client.emit(Protocol.GROUP_REMOVE, {
+                            success: false,
+                            groupId: data.gid,
+                            userId: data.uid
+                        })
                     } else {
                         // send ok
-
+                        client.emit(Protocol.GROUP_REMOVE, {
+                            success: true,
+                            groupId: data.gid,
+                            userId: data.uid
+                        })
                         // notify user
                         messenger.emit(MessageCodes.NOTIFICATION, data.uid, {
                             type: NotificationCodes.REMOVED,
@@ -866,6 +917,11 @@ const clientHandler = (client) => {
                 })
             } else {
                 // cant attemt
+                client.emit(Protocol.GROUP_REMOVE, {
+                    success: false,
+                    groupId: data.gid,
+                    userId: data.uid
+                })
             }
         })
     }
@@ -877,8 +933,18 @@ const clientHandler = (client) => {
         }).exec((err, res) => {
             if (err) {
                 // failed
+                client.emit(Protocol.GROUP_LEAVE, {
+                    success: false,
+                    groupId: data.gid,
+                    userId: _user.id
+                })
             } else {
                 // send ok
+                client.emit(Protocol.GROUP_LEAVE, {
+                    success: true,
+                    groupId: data.gid,
+                    userId: _user.id
+                })
                 // left event
                 recordEvent(groupEvents.left, data.gid, _user.id, null)
             }
@@ -919,6 +985,7 @@ const clientHandler = (client) => {
         }).limit(100).then(events => events.forEach(
             e => {
                 // send event
+                client.emit(Protocol.GROUP_EVENTS_GET, e)
             }
         ))
     }
@@ -931,6 +998,8 @@ const clientHandler = (client) => {
         p.followers = [_user.id]
         post.save().then(p => {
             // send post
+            client.emit(Protocol.GROUP_POST_GET, p)
+
         })
     }
 
@@ -940,7 +1009,13 @@ const clientHandler = (client) => {
             Object.assign(post, data)
             post.save().then(p => {
                 // send post
+                client.emit(Protocol.GROUP_POST_GET, p)
                 // notify followers
+                var noti = {
+                    type: NotificationCodes.Post_edit,
+                    postId: p.id
+                }
+                post.followers.forEach(f => messenger.emit(MessageCodes.NOTIFICATION, f, noti))
             })
         })
     }
@@ -952,6 +1027,11 @@ const clientHandler = (client) => {
             post.deleted = true
             post.save().then(p => {
                 // send post
+                client.emit(Protocol.GROUP_POST_GET, p)
+                // delete post comments
+                GroupComment.deleteMany({
+                    gPostId: p.id
+                })
             })
         })
     }
@@ -959,6 +1039,7 @@ const clientHandler = (client) => {
     function getGpost(data) {
         GroupPost.findById(data.pid).then(post => {
             // send post
+            client.emit(Protocol.GROUP_POST_GET, post)
         })
     }
 
@@ -969,6 +1050,7 @@ const clientHandler = (client) => {
             deleted: false
         }).then(ps => ps.forEach(p => {
             // send post
+            client.emit(Protocol.GROUP_POST_GET, p)
         }))
 
     }
@@ -982,6 +1064,7 @@ const clientHandler = (client) => {
             }).limit(200)
             .then(ps => ps.forEach(p => {
                 // send post
+                client.emit(Protocol.GROUP_POST_GET, p)
             }))
 
     }
@@ -997,9 +1080,16 @@ const clientHandler = (client) => {
                 if (p.followers.indexOf(_user.id) == -1) p.followers.push(_user.id)
                 if (p.comments) p.comments.push(c.id)
                 else p.comments = [c.id]
+                // notify followers
+                var noti = {
+                    type: NotificationCodes.Post_comment,
+                    postId: p.id
+                }
+                if (p.followers) p.followers.forEach(f => messenger.emit(MessageCodes.NOTIFICATION, f, noti))
+
             })
             // send comment
-            // notify followers
+            client.emit(Protocol.GROUP_COMMENT_GET, c)
         })
     }
 
@@ -1009,6 +1099,7 @@ const clientHandler = (client) => {
             Object.assign(c, data)
             c.save().then(co => {
                 // send comment
+                client.emit(Protocol.GROUP_COMMENT_GET, co)
             })
         })
     }
@@ -1018,7 +1109,9 @@ const clientHandler = (client) => {
             delete data.pid
             var i = post.followers.indexOf(_user.id)
             post.followers.slice(i, i)
-            post.save().then(p => {})
+            post.save().then(p => {
+                client.emit(Protocol.GROUP_POST_GET, p)
+            })
         })
     }
 
@@ -1032,6 +1125,7 @@ const clientHandler = (client) => {
             } else post.likes = [_user.id]
             post.save().then(p => {
                 // send p
+                client.emit(Protocol.GROUP_POST_GET, p)
             })
         })
     }
@@ -1041,6 +1135,7 @@ const clientHandler = (client) => {
             gPostId: data.pid
         }).then(cs => cs.forEach(c => {
             // send comment
+            client.emit(Protocol.GROUP_COMMENT_GET, c)
         }))
     }
 
@@ -1069,6 +1164,32 @@ const clientHandler = (client) => {
     client.on(Protocol.USER_GET, getUser);
     client.on(Protocol.USER_GET_ADVISOR, getAdvisor);
     client.on(Protocol.DISCONNECT, disconnect);
+
+    client.on(Protocol.GROUP_COMMENT_EDIT, createGroup);
+    client.on(Protocol.GROUP_UPDATE, updateGroup);
+    client.on(Protocol.GROUP_DELETE, deleteGroup);
+    client.on(Protocol.GROUP_EVENTS_GET, getGroupEvents);
+    client.on(Protocol.GROUP_GET, getGroup);
+    client.on(Protocol.GROUP_GET_ALL, getAllGroups);
+    client.on(Protocol.GROUP_FIND, findGroup);
+    client.on(Protocol.GROUP_JOIN, joinGroup);
+    client.on(Protocol.GROUP_ADD, addtoGroup);
+    client.on(Protocol.GROUP_LEAVE, leaveGroup);
+    client.on(Protocol.GROUP_REMOVE, removeMember);
+    client.on(Protocol.GROUP_GET_OWNER, getGroupOwner);
+    client.on(Protocol.GROUP_GET_MEMBERS, getGroupMemmbers);
+    client.on(Protocol.GROUP_POST_GET, getGpost);
+    client.on(Protocol.GROUP_POST_GET_ALL, getAllGPosts);
+    client.on(Protocol.GROUP_POST_GET_USER, getUserGPosts);
+    client.on(Protocol.GROUP_POST, addGPost);
+    client.on(Protocol.GROUP_POST_DELETE, deleteGPost);
+    client.on(Protocol.GROUP_POST_EDIT, editPost);
+    client.on(Protocol.GROUP_POST_LIKE, likePost);
+    client.on(Protocol.GROUP_POST_UNFOLL0W, unfollowPost);
+    // client.on(Protocol.GROUP_COMMENT_DELETE, );
+    client.on(Protocol.GROUP_COMMENT, addGComment);
+    client.on(Protocol.GROUP_COMMENT_EDIT, editGCmomment);
+    client.on(Protocol.GROUP_COMMENT_GET, getGPcomments);
 
 }
 
