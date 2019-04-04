@@ -3,5 +3,6 @@ package-lock.json
 uploads/*
 logs.log
 Procfile
+.idea
 # config.json
 temp
