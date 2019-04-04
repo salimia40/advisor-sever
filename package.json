@@ -2,26 +2,34 @@
   "name": "advisor",
   "version": "1.0.0",
   "description": "advisor.co backend and webapp",
-  "main": "src/server.js",
+  "main": "server/server.js",
   "engines": {
     "node": "11.9.0"
   },
   "scripts": {
-    "start": "node src/server",
-    "test": "node test",
-    "server": "nodemon src/server"
+    "start": "node server/",
+    "dev_server": "nodemon server/"
   },
   "keywords": [
     "socket.io",
     "node",
     "js"
   ],
+  "homepage": "https://github.com/puyaars/advisor",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/puyaars/advisor/issues",
+    "email": "puyaars@gmail.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/puyaars/advisor.git"
   },
-  "author": "puyaars@gmail.com",
-  "license": "MIT",
+  "author": {
+    "email": "puyaars@gmail.com",
+    "name": "puya ars"
+  },
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@liara/sdk": "^0.2.2",
     "bcryptjs": "^2.4.3",

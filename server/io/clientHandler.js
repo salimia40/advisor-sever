@@ -305,7 +305,7 @@ const clientHandler = (client) => {
     dataManager.addClient(client.id, (action) => {
         switch (action.type) {
             case Protocol.ActionTypes.message:
-                Message.findById(action.messageId, (err, message) => {
+                Message.findById(action.messageId).then(message => {
                     message.state.received = true;
                     message.save();
                     client.emit(Protocol.MESSAGE_SEND, message)
@@ -320,8 +320,10 @@ const clientHandler = (client) => {
             case Protocol.ActionTypes.notify:
                 client.emit(Protocol.NOTIFICATION, notification)
                 return;
-                // todo notification
-                // todo members
+
+            case Protocol.ActionTypes.member:
+                Member.findById(action.memberId).then(m => client.emit(Protocol.GROUP_GET_MEMBERS, m))
+                return;
             default:
                 return;
         }
@@ -357,20 +359,40 @@ const clientHandler = (client) => {
         dataManager.loginClient(client.id, _user.id);
         Queue.getUserQueue(_user.id).then(queue => {
             if (!queue) return;
-            try {
-                if (queue.messages.length == 0) return;
-                for (var i = (--queue.messages.length); i > 0; i--) {
-                    let mId = queue.messages.pop();
-                    Message.findById(mId).then((message) => {
-                        client.emit(Protocol.MESSAGE_SEND, message);
-                    })
-                }
-                // blogs
-                // notifications
-                queue.save();
-            } catch (error) {
-
+            if (queue.messages) {
+                if (queue.messages.length !== 0)
+                    queue.messages.forEach(mId => Message.findById(mId).then((message) => {
+                        message.state.received = true;
+                        message.save();
+                        client.emit(Protocol.MESSAGE_SEND, message)
+                    }))
             }
+            if (queue.blogs) {
+                if (queue.blogs.length !== 0)
+                    queue.blogs.forEach(bId => Blog.findById(bId).then((b) =>
+                        client.emit(Protocol.BLOG_GET, b)
+                    ))
+            }
+            if (queue.members) {
+                if (queue.members.length !== 0)
+                    queue.members.forEach(mId => Member.findById(mId).then((m) =>
+                        client.emit(Protocol.GROUP_GET_MEMBERS, m)
+                    ))
+            }
+            if (queue.notifications) {
+                if (queue.notifications.length !== 0)
+                    queue.notifications.forEach(n =>
+                        client.emit(Protocol.NOTIFICATION, n)
+
+                    )
+            }
+
+            queue.blogs = [];
+            queue.messages = [];
+            queue.members = [];
+            queue.notifications = [];
+
+            queue.save();
         })
     }
 

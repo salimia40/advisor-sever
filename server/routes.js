@@ -4,11 +4,16 @@ const express = require('express'),
     fileUpload = require("express-fileupload"),
     log = require("./log/log"),
     path = require('path'),
-    storage = require('./storage')()
+    config = require('./config'),
+    storage = require('../server/storage')(config.storage_bucket,
+        config.storage_temp_dir,
+        config.storage_keys,
+        config.storage_expiry_mimutes
+    );
 
 router.use(fileUpload({
-    useTempFiles : true,
-    tempFileDir : '/tmp/'
+    useTempFiles: true,
+    tempFileDir: './tmp/'
 }));
 //@post     /upload     link upload a file to server
 //@param    file        file to upload
@@ -43,7 +48,7 @@ const Name = (file) => uuid() + path.extname(file.name)
 router.use(express.static('public'));
 //@get /files/* to download files
 // router.use('/files', express.static('uploads'));
-router.get('/files/:name',(req,res) => {
+router.get('/files/:name', (req, res) => {
     console.log(req.params.name)
     storage.getFileLink(req.params.name).then(link => res.redirect(link)).catch(err => res.status(440))
 })

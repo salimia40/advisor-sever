@@ -3,3 +3,5 @@ package-lock.json
 uploads/*
 logs.log
 Procfile
+# config.json
+temp

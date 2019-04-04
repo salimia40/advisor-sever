@@ -1,3 +1,5 @@
+process.env.NODE_ENV = 'production';
+
 const express = require("express"),
     http = require("http"),
     clientHandler = require("./io/clientHandler"),
@@ -6,9 +8,9 @@ const express = require("express"),
     server = http.Server(app),
     io = require('socket.io')(server),
     port = require('./config').port,
-    routes = require('./routes')
+    routes = require('./routes');
 
-app.use('/', routes)
+app.use('/', routes);
 
 //start listening to socket
 io.on('connection', clientHandler);

@@ -1,0 +1,29 @@
+{
+    "development": {
+        "config_id": "development",
+        "node_port": 3000,
+        "database_host": "localhost",
+        "database_port": "27017",
+        "database_name": "advisor",
+        "storage_bucket": "advisor-v1",
+        "storage_temp_dir": "../../temp",
+        "storage_expiry_mimutes": 120,
+        "storage_keys": {
+            "accessKey": "V8EJ6EE9BMFCPAOVM591N",
+            "secretKey": "KRcudfW1OcsAFm0XKfnXRpbtDTawJXKp78FBrHuFm",
+            "endPoint": "5c7e9229e5fa49001752fc27.storage.liara.ir"
+        }
+    },
+    "testing": {
+        "config_id": "testing"
+    },
+    "production": {
+        "config_id": "production",
+        "node_port": 5000,
+        "database_host": "s3.liara.ir",
+        "database_port": "32107",
+        "database_user": "root",
+        "database_pass": "fqBQv4fJ2b4hiAG7q47b83Uf",
+        "database_name": "advisor"
+    }
+}

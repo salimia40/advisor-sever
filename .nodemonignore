@@ -1,7 +1,8 @@
 /public/*
-/uploads/*
-/log/logs.log
+/temp/*
+/server/log/logs.log
 /.git/*
+/.idea/*
 /.gitignore
 /package.json
 /README.md
