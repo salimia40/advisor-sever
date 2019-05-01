@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/puyaars/advisor/blob/master/LICENSE)
 
-Advisor is an app to connect university students with theire advisors so the chat, connect and communicate, there's also groups for students to connect each other.
+Advisor is an app to connect university students with theire advisors so they can chat, connect and communicate, there's also groups for students to connect each other.
 this project is backend for the app.
----
+
 ## Requirements
 
 For development, you will only need Node.js and a node global package, Yarn, installed in your environement.
