@@ -14,6 +14,10 @@ const uuid = require('uuid'),
     GroupPost = require('../models/groupPost'),
     GroupComment = require('../models/gComment')
 
+/**
+ * @class ClientData 
+ * saves info for each socket client
+ */
 class ClientData {
     constructor(clientId, oncall) {
         this.clientId = clientId;
@@ -24,10 +28,12 @@ class ClientData {
     login(bool, userId) {
         this.userId = bool ? userId : null;
     }
-
 }
 
-
+/**
+ * @class DataManager
+ * keeps track of all clients
+ */
 class DataManager {
 
     constructor() {
@@ -72,6 +78,9 @@ class DataManager {
 const dataManager = new DataManager();
 const messenger = new events.EventEmitter();
 
+/**
+ * @constant codes for messenger emmiter
+ */
 const MessageCodes = {
     MESSAGE: 'message',
     BLOG: 'blog',
@@ -80,9 +89,13 @@ const MessageCodes = {
     groupDeletion: "groupDeletion"
 }
 
+/**
+ * @constant codes for notification types
+ */
 const NotificationCodes = {
     ADDED: 'added',
     REMOVED: "removed",
+    Group_deleted: "group deleted",
     Blog: "blog",
     Blog_comment: "blog/comment",
     Post: "post",
@@ -90,6 +103,12 @@ const NotificationCodes = {
     Post_comment: "post/comment",
 }
 
+/**
+ * @param message
+ * @event
+ * if user is online it sends the message
+ * or saves it in que so to be resived onlogin
+ */
 messenger.on(MessageCodes.MESSAGE, (message) => {
     User.isOnline(message.to).then(bool => {
         if (bool) return dataManager.callUser({
@@ -110,6 +129,12 @@ messenger.on(MessageCodes.MESSAGE, (message) => {
 
 })
 
+/**
+ * @param member
+ * @event
+ * if user is online it sends the member
+ * or saves it in queue so to be resived onlogin
+ */
 messenger.on(MessageCodes.MEMBER, (member) => {
     User.isOnline(member.userId).then(bool => {
         if (bool) {
@@ -123,7 +148,10 @@ messenger.on(MessageCodes.MEMBER, (member) => {
     })
 })
 
-
+/**
+ * @param message
+ * @event sends blog to all students 
+ */
 messenger.on(MessageCodes.BLOG, blog => {
     User.find().students(blog.userId).then(users => {
         var notification = {
@@ -160,9 +188,12 @@ messenger.on(MessageCodes.BLOG, blog => {
     })
 })
 
-
+/**
+ * @param userId
+ * @param notification
+ * @event sends notification to coresponding user
+ */
 messenger.on(MessageCodes.NOTIFICATION, (userId, notification) => {
-    // todo notification
     User.isOnline(userId).then(bool => {
         if (bool) return dataManager.callUser({
             type: Protocol.ActionTypes.notify,
@@ -172,13 +203,16 @@ messenger.on(MessageCodes.NOTIFICATION, (userId, notification) => {
     })
 })
 
+/**
+ * @event notifies all members that group has been deleted
+ */
 messenger.on(MessageCodes.groupDeletion, (ownerId, groupId) => {
     Member.find({
         groupId: groupId
     }).then(ms => ms.forEach(m => {
         User.isOnline(m.userId).then(bool => {
             var notification = {
-                type: NotificationCodes.REMOVED,
+                type: NotificationCodes.Group_deleted,
                 userId: ownerId,
                 groupId: m.groupId
             }
@@ -251,6 +285,9 @@ function queueMember(uid, mid) {
     })
 }
 
+/**
+ * @constant codes for group events
+ */
 const groupEvents = {
     joined: 'joined',
     left: 'left',
@@ -260,6 +297,13 @@ const groupEvents = {
     updated: 'updated',
 }
 
+/**
+ * 
+ * @param {String} e event code
+ * @param {*} gid GTOUP ID
+ * @param {*} subUser who did
+ * @param {*} obUser on who
+ */
 function recordEvent(e, gid, subUser, obUser) {
     var ge = new GroupEvent({
         groupId: gid,
@@ -270,7 +314,11 @@ function recordEvent(e, gid, subUser, obUser) {
     ge.save()
 }
 
+/**
+ * keeps user info
+ */
 class USER {
+
     constructor() {
         this._user = null;
     }
@@ -295,13 +343,28 @@ class USER {
         return (this._user.role == Protocol.UserTypes.advisor) ? this._user._id : this._user.advisorId;
     }
 
+    /**
+     * checks if client has a user
+     */
     get loggedin() {
         return this.user != null;
     }
 }
-
+/**
+ * 
+ * @param {*} client 
+ * @exports
+ */
 const clientHandler = (client) => {
     var _user = new USER();
+    /**
+     * adds client to data manager
+     * @callback action calls to user are emmitd here
+     * @emits client#MESSAGE_SEND
+     * @emits client#BLOG_GET
+     * @emits client#GROUP_GET_MEMBERS
+     * @emits client#NOTIFICATION
+     */
     dataManager.addClient(client.id, (action) => {
         switch (action.type) {
             case Protocol.ActionTypes.message:
@@ -329,6 +392,15 @@ const clientHandler = (client) => {
         }
     })
 
+    /**
+     * login req
+     * 
+     * @param {Object} data 
+     * @requires data.username
+     * @requires data.pasword
+     * 
+     * @emits cilent#USER_LOGIN{success,message,user}
+     */
     function login(data) {
         let username = data.username;
         let password = data.password;
@@ -355,10 +427,19 @@ const clientHandler = (client) => {
         })
     }
 
+    /**
+     * sends all queued docs to client
+     * 
+     * @emits client#MESSAGE_SEND
+     * @emits client#BLOG_GET
+     * @emits client#GROUP_GET_MEMBERS
+     * @emits client#NOTIFICATION
+     */
     function onLogin() {
         dataManager.loginClient(client.id, _user.id);
         Queue.getUserQueue(_user.id).then(queue => {
             if (!queue) return;
+            console.info(queue)
             if (queue.messages) {
                 if (queue.messages.length !== 0)
                     queue.messages.forEach(mId => Message.findById(mId).then((message) => {
@@ -396,6 +477,21 @@ const clientHandler = (client) => {
         })
     }
 
+    /**
+     * register req
+     * 
+     * @param {Object} data 
+     * @requires data.username
+     * @requires data.password
+     * @requires data.email
+     * @requires data.role
+     * @requires data.name
+     * 
+     * @emits {success, message,user}
+     * 
+     * if no user is logged in registerd one logges in
+     * 
+     */
     function register(data) {
 
         let user = new User();
@@ -447,6 +543,12 @@ const clientHandler = (client) => {
 
     }
 
+    /**
+     * creates a blank queue for user
+     * 
+     * @param {User} user 
+     * @requires user.id
+     */
     function createQueue(user) {
         var queue = new Queue({
             userId: user.id
@@ -454,10 +556,22 @@ const clientHandler = (client) => {
         queue.save();
     }
 
+    /**
+     * ckecks if user is student
+     * @param {User} user 
+     * @requires user.role
+     * @returns {Boolean}
+     */
     function isStudent(user) {
         return user.role === Protocol.UserTypes.student
     }
 
+    /**
+     * creates an student doc for user
+     * @param {User} user 
+     * @emits client#STUDENT_GET
+     * 
+     */
     function createStudent(user) {
         var student = new Student();
         student.username = user.username;
@@ -466,14 +580,26 @@ const clientHandler = (client) => {
         student.save().then(st => client.emit(Protocol.STUDENT_GET, st));
     }
 
-    function sendStudent(ignored) {
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.uid   user id of requested student
+     * @emits client#STUDENT_GET
+     * 
+     */
+    function sendStudent(data) {
         Student.findOne({
-            userId: _user.id
+            userId: data.uid
         }).then((student) =>
             client.emit(Protocol.STUDENT_GET, student)
         );
     }
 
+    /**
+     * 
+     * @param {*} data student document fields
+     * @emits client#STUDENT_GET
+     */
     function updateStudent(data) {
         Student.findOne({
             userId: _user.id
@@ -485,24 +611,52 @@ const clientHandler = (client) => {
         });
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.querry
+     * @emits client#USER_GET
+     * 
+     */
     function findUsers(data) {
         User.findUsers(data.querry).then((users) => {
-            client.emit(Protocol.USER_FIND, users);
+            client.emit(Protocol.USER_GET, users);
         })
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @emits client#USER_GET
+     * 
+     */
     function getAdvisor(data) {
         _user.user.getAdvisor().then((user) => {
-            client.emit(Protocol.USER_GET_ADVISOR, user);
-        })
-    }
-
-    function getUser(data) {
-        User.findById(data.findById).then((user) => {
             client.emit(Protocol.USER_GET, user);
         })
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @emits client#USER_GET
+     * @requires data.userId
+     */
+    function getUser(data) {
+        User.findById(data.userId).then((user) => {
+            client.emit(Protocol.USER_GET, user);
+        })
+    }
+
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.email
+     * @emits client#USER_GET
+     * 
+     * @login
+     * 
+     */
     function updateEmail(data) {
         if (_user.user != null) {
             _user.user.email = null;
@@ -515,11 +669,20 @@ const clientHandler = (client) => {
                     message: "email updated"
                 });
                 _user.user = newUser;
-                // this.sendConfirmEmail();
+                // sendConfirmEmail();
             })
         }
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.name
+     * @emits client#USER_GET
+     * 
+     * @login
+     * 
+     */
     function updateName(data) {
         if (_user.user != null) {
             _user.user.name = data.name;
@@ -533,6 +696,15 @@ const clientHandler = (client) => {
         }
     };
 
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.bio
+     * @emits client#USER_GET
+     * 
+     * @login
+     * 
+     */
     function updateBio(data) {
         if (_user.user != null) {
             _user.user.bio = data.bio;
@@ -546,6 +718,16 @@ const clientHandler = (client) => {
         }
     };
 
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.avatar.small
+     * @requires data.avatar.large
+     * @emits client#USER_GET
+     * 
+     * @login
+     * 
+     */
     function updateAvatar(data) {
         if (_user.user != null) {
             _user.user.avatar.small = data.avatar.small;
@@ -560,6 +742,16 @@ const clientHandler = (client) => {
         }
     };
 
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.password
+     * @requires data.newPassword
+     * @emits client#USER_CHANGE_PASSWORD
+     * 
+     * @login
+     * 
+     */
     function changePassword(data) {
         User.changePassword(_user.user, data.password, data.newPassword, (res) => {
             client.emit(Protocol.USER_CHANGE_PASSWORD, res);
@@ -567,6 +759,16 @@ const clientHandler = (client) => {
         })
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @requires data.content
+     * @requires data.to
+     * @emits messenger#MESSAGE
+     * 
+     * @login
+     * 
+     */
     function sendMessage(data) {
         let message = new Message({
             from: _user.id,
@@ -577,6 +779,15 @@ const clientHandler = (client) => {
         });
     }
 
+    /**
+     * 
+     * @param {*} data
+     * @requires data.other
+     * @emits client#MESSAGE_SEND
+     * 
+     * @login
+     * 
+     */
     function getMessages(data) {
         var userId = _user.id;
         if (!data.other) {
@@ -595,7 +806,7 @@ const clientHandler = (client) => {
     }
 
     function deleteMessage(data) {
-        //todo confirm that user is message owner
+        //confirms that user is message owner
         Message.findById(data.messageId).then((message) => {
             if (message.from == _user.id) {
                 message.content = null;
@@ -611,7 +822,9 @@ const clientHandler = (client) => {
 
         Message.findById(data.messageId).then((message) => {
             if (message.from == _user.id) {
-                message.content = data.content;
+                delete data.messageId
+                delete data.deleted
+                Object.assign(message,data)
                 message.updated = true;
                 message.save().then((message) => {
                     messenger.emit(MessageCodes.MESSAGE, message)
@@ -621,6 +834,7 @@ const clientHandler = (client) => {
     }
 
     function getBlogs(data) {
+        console.log(_user.advisorId)
         Blog.find().byUser(_user.advisorId).then(blogs => blogs.forEach(blog => client.emit(Protocol.BLOG_GET, blog)))
     }
 
@@ -643,10 +857,18 @@ const clientHandler = (client) => {
     }
 
     function sendBlog(data) {
-        blog = new Blog();
-        blog = Object.assign(blog, {
-            userId: _user.advisorId
-        }, ...data);
+        var blog = new Blog();
+        console.log(data)
+        var aid = _user.advisorId
+        if (!aid) aid = _user.id
+        console.log(aid)
+        // Object.assign(blog, ...data);
+        blog.title = data.title
+        blog.document = data.document
+        Object.assign(blog, {
+            userId: aid
+        });
+
         blog.save().then((blog) => messenger.emit(MessageCodes.BLOG, blog))
     }
 
@@ -1181,6 +1403,7 @@ const clientHandler = (client) => {
     client.on(Protocol.USER_CHANGE_PASSWORD, changePassword);
     client.on(Protocol.STUDENT_UPDATE, updateStudent);
     client.on(Protocol.STUDENT_GET, sendStudent);
+    // todo get students
     client.on(Protocol.USER_LOGOUT, logout);
     client.on(Protocol.USER_FIND, findUsers);
     client.on(Protocol.USER_GET, getUser);

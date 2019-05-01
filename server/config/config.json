@@ -12,6 +12,10 @@
             "accessKey": "V8EJ6EE9BMFCPAOVM591N",
             "secretKey": "KRcudfW1OcsAFm0XKfnXRpbtDTawJXKp78FBrHuFm",
             "endPoint": "5c7e9229e5fa49001752fc27.storage.liara.ir"
+        },
+        "mail":{
+            "user" : "confirm@puyaars.ir",
+            "pass": "ali1376reza"
         }
     },
     "testing": {

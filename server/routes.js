@@ -19,6 +19,11 @@ router.use(fileUpload({
 //@param    file        file to upload
 const uploadPath = storage.tempDir;
 
+/** 
+ * @post     /upload     link upload a file to server
+ * @param    file        file to upload
+ */
+
 router.post('/upload', (req, res) => {
 
     /** @namespace req.files */
@@ -41,17 +46,28 @@ router.post('/upload', (req, res) => {
     });
 });
 
+/**
+ * generates a uniq name for file
+ */
 const Name = (file) => uuid() + path.extname(file.name)
 
-//serve public folder for web router
-//built web router will be placed here
+/**
+ * serve public folder for web router
+ * built web router will be placed here
+ */
 router.use(express.static('public'));
-//@get /files/* to download files
-// router.use('/files', express.static('uploads'));
+/**
+ * returns file from storage to be downloaded
+ * @get /files/* to download files
+ */
 router.get('/files/:name', (req, res) => {
     console.log(req.params.name)
     storage.getFileLink(req.params.name).then(link => res.redirect(link)).catch(err => res.status(440))
 })
+
+/**
+ * shows the log file
+ */
 router.get('/log', (req, res) => {
     res.download(__dirname + '/log/logs.log')
 })

@@ -23,7 +23,7 @@ const queueSchema = new Schema({
 });
 
 queueSchema.statics.getUserQueue = function (userId) {
-    return this.find({
+    return this.findOne({
         userId: userId
     })
 }

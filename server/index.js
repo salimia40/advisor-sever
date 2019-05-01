@@ -1,5 +1,3 @@
-process.env.NODE_ENV = 'production';
-
 const express = require("express"),
     http = require("http"),
     clientHandler = require("./io/clientHandler"),

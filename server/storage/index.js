@@ -3,9 +3,20 @@ const Liara = require('@liara/sdk'),
     fs = require('fs'),
     log = require('../log/log')
 
+
+/**
+ *  storage provider 
+ *
+ * @param {String} bucketName
+ * @param {String} temp
+ * @param {String} storageKeys
+ * @param {String} expiry
+ * @returns {saveFile,getFileLink}
+ */
 module.exports = (bucketName, temp, storageKeys, expiry) => {
 
     const tempPath = path.join(__dirname, temp);
+
     fs.exists(tempPath, exists => {
         if (exists) log.info(`storage tempdir ${temp} exists skipping`)
         else {

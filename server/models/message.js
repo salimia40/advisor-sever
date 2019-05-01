@@ -59,6 +59,7 @@ messageSchema.query.getAllChats = function (userId, page = 1, perPage = 100) {
         }, {
             from: userId
         }])
+        .and({deleted: false})
         .sort({
             date: -1
         })
@@ -76,6 +77,7 @@ messageSchema.query.getUserChats = function (userId, otherUserId, page = 1, perP
             to: otherUserId,
             from: userId
         }])
+        .and({deleted: false})
         .sort({
             date: -1
         })

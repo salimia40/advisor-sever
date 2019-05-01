@@ -1,3 +1,6 @@
+/**
+ * uniq message identifiers for socket.io
+ */
 module.exports = {
     USER_LOGIN: 'user/login',
     USER_REGISTER: 'user/register',
