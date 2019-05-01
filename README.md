@@ -88,6 +88,6 @@ https://my-website.liara.run
 
 * **AliReza Salimi** - *all the jobs* - [puyaars](https://github.com/puyaars)
 
-##License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/puyaars/advisor/blob/master/LICENSE) file for details
