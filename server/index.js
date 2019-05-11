@@ -1,17 +1,15 @@
 const express = require("express"),
     http = require("http"),
-    clientHandler = require("./io/clientHandler"),
-    log = require("./log/log"),
+    log = require("./log"),
     app = express(),
     server = http.Server(app),
-    io = require('socket.io')(server),
     port = require('./config').port,
-    routes = require('./routes');
+    api = require('./api'),
+    io = require('./io')
 
-app.use('/', routes);
-
-//start listening to socket
-io.on('connection', clientHandler);
+// app.use('/', routes);
+api(app)
+io(server)
 
 //start server
 server.listen(port, function () {

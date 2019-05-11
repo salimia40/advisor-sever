@@ -1,5 +1,5 @@
 const uuid = require('uuid'),
-    log = require("../log/log"),
+    log = require("../log"),
     User = require('../models/user'),
     Message = require('../models/message'),
     Student = require('../models/student'),

@@ -1,7 +1,7 @@
 const Liara = require('@liara/sdk'),
     path = require('path'),
     fs = require('fs'),
-    log = require('../log/log')
+    log = require('../log')
 
 
 /**

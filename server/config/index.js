@@ -1,10 +1,10 @@
-// process.env.NODE_ENV = 'production';
+process.env.NODE_ENV = 'production';
 
 /**
  * reads config from json file 
  */
 readConfig = () => {
-    const log = require('../log/log')
+    const log = require('../log')
     const config = require('./config.json');
     const defaultConfig = config.development;
     const environment = process.env.NODE_ENV || 'development';

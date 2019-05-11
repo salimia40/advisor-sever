@@ -1,8 +1,8 @@
-const {encode,decode} = require('../server/sec')()
+const {encode,decode} = require('../server/jwt')()
 
 
 var auth = {
-    user : 'puya',
+    id : 'kdopafkj0-93iwpdkdkas',
     pass : 'asra18'
 }
 
