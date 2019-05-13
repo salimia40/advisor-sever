@@ -36,6 +36,7 @@ buildConfig = (config) => {
     c.port = config.node_port
     c.mail = config.mail
     return c;
+    
 }
 
 module.exports = buildConfig(readConfig());

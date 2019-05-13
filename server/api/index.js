@@ -1,30 +1,28 @@
-const express = require('express'),
+const
+    express = require('express'),
     mainRouter = express.Router(),
+    mailRouter = express.Router(),
     authenticatedRouter = express.Router(),
-    routes = require('./routes')
-
-const checkAuth = function (req, res, next) {
-    var token = req.header('token')
-    console.log(req.header('token'))
-    if (!token) res.sendStatus(401)
-    else {
-        req.user = token
-        next()
-    }
-}
+    routes = require('./routes'),
+    checkAuth = require('./checkAuth')
 
 module.exports = (app) => {
-    app.use(express.json()); // to support JSON-encoded bodies
-    app.use(express.urlencoded({extended:true})); // to support URL-encoded bodies
-    
+    mainRouter.use(express.json()); // to support JSON-encoded bodies
+    mainRouter.use(express.urlencoded({
+        extended: true
+    })); // to support URL-encoded bodies
+
     // validate token and add user to request
     authenticatedRouter.use(checkAuth)
     routes.userRoutes(authenticatedRouter)
+    routes.studentRoutes(authenticatedRouter)
     mainRouter.use('/auth', authenticatedRouter)
     routes.fileRoutes(mainRouter)
     routes.authRoutes(mainRouter)
+    routes.mailRoutes(mailRouter)
 
     app.use('/api', mainRouter)
+    app.use('/email', mailRouter)
 
     /**
      * serve public folder for web router

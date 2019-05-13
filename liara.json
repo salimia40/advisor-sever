@@ -1,4 +1,5 @@
 {
   "platform": "node",
-  "port": 5000
+  "port": 5000,
+  "project": "advisor"
 }

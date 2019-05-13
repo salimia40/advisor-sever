@@ -7,8 +7,7 @@ const
     storage = require('../../storage')(
         config.storage_bucket,
         config.storage_temp_dir,
-        config.storage_keys,
-        config.storage_expiry_mimutes
+        config.storage_keys
     );
 
 module.exports = (router) => {
@@ -58,7 +57,6 @@ module.exports = (router) => {
      */
     router.route('/files/:name')
         .get((req, res) => {
-            console.log(req.params.name)
             storage.getFileLink(req.params.name).then(link => res.redirect(link)).catch(err => res.status(440))
         })
 
@@ -67,7 +65,7 @@ module.exports = (router) => {
      */
     router.route('/log')
         .get((req, res) => {
-            res.download(__dirname + '/../log/logs.log')
+            res.download(__dirname + '/../../log/logs.log')
         })
 
 

@@ -10,10 +10,9 @@ const Liara = require('@liara/sdk'),
  * @param {String} bucketName
  * @param {String} temp
  * @param {String} storageKeys
- * @param {String} expiry
  * @returns {saveFile,getFileLink}
  */
-module.exports = (bucketName, temp, storageKeys, expiry) => {
+module.exports = (bucketName, temp, storageKeys) => {
 
     const tempPath = path.join(__dirname, temp);
 
@@ -54,7 +53,7 @@ module.exports = (bucketName, temp, storageKeys, expiry) => {
                 log.info(`storing file ${name} in ${bucketName} error: ${err}`)
             })
         },
-        getFileLink: (name) => liaraClient.presignedGetObject(bucketName, name, expiry * 60),
+        getFileLink: (name) => liaraClient.presignedGetObject(bucketName, name,120 * 60),
         tempDir: tempPath
     }
 }

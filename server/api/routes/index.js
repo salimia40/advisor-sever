@@ -3,5 +3,6 @@ module.exports = {
     fileRoutes : require('./fileRoutes'),
     authRoutes : require('./authRoutes'),
     userRoutes : require('./userRoutes'),
-    studentRoutes : require('./studentRoutes')
+    studentRoutes : require('./studentRoutes'),
+    mailRoutes : require('./mailRoutes')
 }

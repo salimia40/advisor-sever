@@ -1,13 +1,12 @@
-const express = require("express"),
+const
     http = require("http"),
     log = require("./log"),
-    app = express(),
+    app = require("express")(),
     server = http.Server(app),
     port = require('./config').port,
     api = require('./api'),
     io = require('./io')
 
-// app.use('/', routes);
 api(app)
 io(server)
 

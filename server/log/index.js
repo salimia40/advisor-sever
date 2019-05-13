@@ -31,6 +31,7 @@ function BuildLogger(file = '/logs.log') {
   ];
 
   levels.forEach((level,i) => {
+
     Logger[level] = (msg) => {
       stream.write(format(level,new Date(),JSON.stringify(msg, null, 4)) )
       if(i <= levels.indexOf('error')){

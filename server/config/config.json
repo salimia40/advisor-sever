@@ -24,10 +24,10 @@
     "production": {
         "config_id": "production",
         "node_port": 5000,
-        "database_host": "s3.liara.ir",
-        "database_port": "32107",
+        "database_host": "s5.liara.ir",
+        "database_port": "34094",
         "database_user": "root",
-        "database_pass": "fqBQv4fJ2b4hiAG7q47b83Uf",
+        "database_pass": "RSSBWPXaTj94KuymWo2Z2mXq",
         "database_name": "advisor"
     }
 }

@@ -112,6 +112,21 @@ userSchema.query.students = function(userId){
 }
 
 userSchema.statics.changePassword = function (user, password, newPassword, callback) {
+    if(callback == undefined) return new Promise((res,rej) => {
+        bcrypt.compare(password, user.password).then(isMatch => {
+            if (isMatch) {
+                bcrypt.hash(newPassword, 10).then(hash => {
+                    user.password = hash;
+                    user.save(function (err, newUser) {
+                        if (err) return rej(
+                            'failed to change password'
+                        );
+                        else return res('password changed successfully');
+                    });
+                })
+            } else return rej('incorrect password');
+        })
+    })
     bcrypt.compare(password, user.password).then(isMatch => {
         if (isMatch) {
             bcrypt.hash(newPassword, 10).then(hash => {
@@ -148,5 +163,4 @@ userSchema.statics.createUser = function (user) {
 
 const User = mongoose.model('User', userSchema);
 
-// export default User;
 module.exports = User;

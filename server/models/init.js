@@ -15,7 +15,7 @@ mongoose
         log.info('connected to db')
     })
     .catch((err) => {
-        log.info(err.message)
+        log.error(err.message)
     });
 
 // mongoose.set('useCreateIndex', true);
