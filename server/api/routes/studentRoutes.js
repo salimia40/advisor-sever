@@ -40,4 +40,59 @@ module.exports = (router) => {
             }
             res.json(req.user)
         })
+
+    router.route('/student/add')
+        .post(async (req,res) => {
+            let username = req.body.username,
+            password = req.body.password,
+            email = req.body.email,
+            name = req.body.name,
+            role = 'student',
+            advisorId = req.user.id
+
+        let user = new User({
+            username,
+            password,
+            name,
+            role,
+            advisorId
+        })
+
+        user.email = {
+            email: email,
+            confirmed: false,
+            confirmCode: uuid()
+        }
+
+        try {
+            
+            let existing = await User.findByUsername(user.username)
+            
+            if (existing)
+            return res
+            .status(409)
+            .json({
+                success: false,
+                message: 'user already exists'
+            });
+            
+            user = await User.createUser(user)
+            delete user.password
+            
+            createQueue(user);
+            if (isStudent(user)) createStudent(user)
+            sendConfirmEmail(user)
+            
+        
+            res.status(200).json({
+                success: true,
+                // token,
+                message: 'user created'
+            });
+            
+        } catch (error) {
+            console.log(error)
+            res.sendStatus(501)    
+        }
+        })
 }

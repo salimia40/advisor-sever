@@ -29,6 +29,7 @@ function BuildLogger(file = '/logs.log') {
     'info',
     'debug',
   ];
+  stream.write("\n");
 
   levels.forEach((level,i) => {
 

@@ -4,5 +4,6 @@ module.exports = {
     authRoutes : require('./authRoutes'),
     userRoutes : require('./userRoutes'),
     studentRoutes : require('./studentRoutes'),
+    blogRoutes : require('./blogRoutes'),
     mailRoutes : require('./mailRoutes')
 }

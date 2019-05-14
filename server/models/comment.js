@@ -9,7 +9,8 @@ const commentSchema = new Schema({
     content: {
         text: String,
         image: String,
-    }    
+    },
+    deleted : {type:Boolean,default:false}
 });
 
 commentSchema.query.byBlog = function(bid){

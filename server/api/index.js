@@ -7,14 +7,15 @@ const
     checkAuth = require('./checkAuth')
 
 module.exports = (app) => {
-    mainRouter.use(express.json()); // to support JSON-encoded bodies
-    mainRouter.use(express.urlencoded({
+    app.use(express.json()); // to support JSON-encoded bodies
+    app.use(express.urlencoded({
         extended: true
     })); // to support URL-encoded bodies
 
     // validate token and add user to request
     authenticatedRouter.use(checkAuth)
     routes.userRoutes(authenticatedRouter)
+    routes.blogRoutes(authenticatedRouter)
     routes.studentRoutes(authenticatedRouter)
     mainRouter.use('/auth', authenticatedRouter)
     routes.fileRoutes(mainRouter)
