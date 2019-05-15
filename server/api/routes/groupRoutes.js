@@ -35,7 +35,7 @@ module.exports = (router) => {
             }
 
             // creating g
-            let group = await Group.findGroup(name)
+            group = await Group.findGroup(name)
             if (group) return res.status(409).json('group already exists')
             group = new Group(req.body)
             group = await group.save()

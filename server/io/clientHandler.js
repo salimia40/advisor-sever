@@ -1234,7 +1234,6 @@ const clientHandler = (client) => {
         ))
     }
 
-
     function addGPost(data) {
         var post = new GroupPost({}, {
             ...data
