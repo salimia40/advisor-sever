@@ -5,5 +5,7 @@ module.exports = {
     userRoutes : require('./userRoutes'),
     studentRoutes : require('./studentRoutes'),
     blogRoutes : require('./blogRoutes'),
+    groupRoutes : require('./groupRoutes'),
+    postRoutes : require('./postRoutes'),
     mailRoutes : require('./mailRoutes')
 }

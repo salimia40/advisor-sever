@@ -1074,7 +1074,7 @@ const clientHandler = (client) => {
             role: Protocol.GroupRoles.owner
         }).then(owner => {
             // send member
-            client.emit(Protocol.GROUP_GET_MEMBERS, m)
+            client.emit(Protocol.GROUP_GET_MEMBERS, owner)
         })
     }
 

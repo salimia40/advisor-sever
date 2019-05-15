@@ -88,6 +88,15 @@ https://my-website.liara.run
 
 * **AliReza Salimi** - *all the jobs* - [puyaars](https://github.com/puyaars)
 
+[![alt text][1.1]][1]
+[![alt text][2.1]][2]
+
+[1.1]: http://i.imgur.com/tXSoThF.png (twitter icon with padding)
+[2.1]: http://i.imgur.com/P3YfQoD.png (facebook icon with padding)
+
+[1]: http://www.twitter.com/puyaars
+[2]: http://www.facebook.com/puyaars
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/puyaars/advisor/blob/master/LICENSE) file for details

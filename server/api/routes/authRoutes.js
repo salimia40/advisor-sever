@@ -10,12 +10,13 @@ module.exports = (router) => {
 
     router
         .route('/login')
-        .post((req, res) => {
+        .post(async (req, res) => {
             let username = req.body.username,
                 password = req.body.password
 
-            if (!(username && password)) return res.sendStatus(400)
-            User.findByUsername(username).then(user => {
+            try {
+                if (!(username && password)) return res.sendStatus(400)
+                let user = await User.findByUsername(username)
                 if (!user) return res.status(404).json({
                     success: false,
                     message: 'user not found'
@@ -38,10 +39,10 @@ module.exports = (router) => {
                         message: 'login successful',
                     })
                 })
-            }).catch(err => {
-                console.log(err)
+            } catch (error) {
+                console.log(error)
                 res.sendStatus(501)
-            })
+            }
 
         })
 
