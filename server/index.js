@@ -7,8 +7,11 @@ const
     api = require('./api'),
     io = require('./io')
 
-api(app)
-io(server)
+const clientManager = new ClientManager();
+const messenger = require('./io/messenger')(clientManager)
+
+api(app, messenger)
+io(server, messenger,clientManager)
 
 //start server
 server.listen(port, function () {

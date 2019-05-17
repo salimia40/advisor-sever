@@ -1,13 +1,13 @@
-const clientHandler = require("./clientHandler"),
+const 
 client2 = require("./client.v2"),
 Socket = require('socket.io')
 
 // setup socket.io
-module.exports = (server) => {
+module.exports = (server, Messenger,ClientManager) => {
     const io = Socket(server)
     //start listening to socket
-    io.on('connection', clientHandler);
     //new server using jwt
     const ioV2 = io.of('/v2');
-    ioV2.on('connection', client2(ioV2));
+    const clientHandler = client2(ioV2,Messenger,ClientManager)
+    ioV2.on('connection', clientHandler);
 }

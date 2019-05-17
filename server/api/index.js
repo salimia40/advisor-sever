@@ -7,7 +7,7 @@ const
     routes = require('./routes'),
     checkAuth = require('./checkAuth')
 
-module.exports = (app) => {
+module.exports = (app,messenger) => {
     // a security middleware
     app.use(helmet())
     app.use(express.json()); // to support JSON-encoded bodies
