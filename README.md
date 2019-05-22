@@ -55,39 +55,39 @@ Open `server/config/config.json` then edit it with your settings. You will need:
 
 ## https Endpoints
     
-    - all content should be urlencoded
-    - endpoints sighned with @AUTH should have token header for autentication 
+all content should be urlencoded
+endpoints sighned with @AUTH should have token header for autentication 
 
-    upload any file
-        @POST - /api/upload
-        @BODY file
-    
-    download file knowing its name
-        @GET - /api/files/:name
-    
-    confirm user's email address
-        @GET - /email/:userId/:code     
+upload any file
+    @POST - /api/upload
+    @BODY file
 
-    login and get api tocken
-        @POST - /api/login
-        @BODY username
-        @BODY password
+download file knowing its name
+    @GET - /api/files/:name
 
-    register and get api tocken
-        @POST - /api/register
-        @BODY username
-        @BODY password
-        @BODY name
-        @BODY email
-        @BODY role
-        @BODY advisorId
+confirm user's email address
+    @GET - /email/:userId/:code     
 
-    get current user info
-        @GET - /api/user
-    
-    get spsific user info
-        @POST - /api/user
-        @BODY uid
+login and get api tocken
+    @POST - /api/login
+    @BODY username
+    @BODY password
+
+register and get api tocken
+    @POST - /api/register
+    @BODY username
+    @BODY password
+    @BODY name
+    @BODY email
+    @BODY role
+    @BODY advisorId
+
+get current user info
+    @GET - /api/user
+
+get spsific user info
+    @POST - /api/user
+    @BODY uid
 
     
 
