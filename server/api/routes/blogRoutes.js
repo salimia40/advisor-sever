@@ -1,7 +1,7 @@
 const Blog = require('../../models/blog'),
     Comment = require('../../models/comment')
 
-module.exports = (router) => {
+module.exports = (router,messenger) => {
     router.route('/blog')
         .get(async (req,res) => {
             let aid;
@@ -21,8 +21,8 @@ module.exports = (router) => {
             });
             
             blog = await blog.save();
+            messenger.emit(messenger.MessageCodes.BLOG, blog)
             res.json(blog)
-            // todo call messenger
         })
         .patch(async (req,res) => {
             if (req.user.role != 'advisor') return res.sendStatus(401)
@@ -34,8 +34,8 @@ module.exports = (router) => {
             if (req.body.bid != undefined) blog.document = req.body.document;
 
             blog = await blog.save()
+            messenger.emit(messenger.MessageCodes.BLOG, blog)
             res.json(blog)
-            // todo call messenger
         })
         .delete(async (req,res) => {
             if (req.user.role != 'advisor') return res.sendStatus(401)
@@ -44,8 +44,8 @@ module.exports = (router) => {
             if (req.user.id != blog.userId) return res.sendStatus(401)
             blog.deleted = true
             blog = await blog.save()
+            messenger.emit(messenger.MessageCodes.BLOG, blog)
             res.json(blog)
-            // todo call messenger
         })
 
     router.route('/comment')

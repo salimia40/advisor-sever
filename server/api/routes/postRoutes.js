@@ -2,7 +2,7 @@ const
     GroupPost = require('../../models/groupPost'),
     GroupComment = require('../../models/gComment')
 
-module.exports = (router) => {
+module.exports = (router,messenger) => {
 
     router.route('/post')
         /**
@@ -90,6 +90,11 @@ module.exports = (router) => {
                 if(file != undefined) post.content.file = file
             
             post = await post.save()
+            let noti = {
+                type: messenger.NotificationCodes.Post_edit,
+                postId: p.id
+            }
+            post.followers.forEach(f => messenger.emit(messenger.MessageCodes.NOTIFICATION, f, noti))
             res.json(post)
             // post event
         })
@@ -100,7 +105,7 @@ module.exports = (router) => {
             res.sendStatus(200)
         })
 
-    router.route('/post/follow')
+    router.route('/post/unfollow')
         .post(async (req,res) => {
             let post = await GroupPost.findById(req.body.pid)
             var i = post.followers.indexOf(req.user.id)
@@ -142,6 +147,12 @@ module.exports = (router) => {
             // follow post
             if (p.followers.indexOf(_user.id) == -1) p.followers.push(_user.id)
             await p.save()
+            let noti = {
+                type: messenger.NotificationCodes.Post_comment,
+                postId: p.id
+            }
+            if (p.followers) p.followers.forEach(f => messenger.emit(messenger.MessageCodes.NOTIFICATION, f, noti))
+
             res.json(comment)
             // todo notify folower
         })

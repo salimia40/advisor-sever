@@ -18,10 +18,10 @@ module.exports = (app,messenger) => {
     // validate token and add user to request
     authenticatedRouter.use(checkAuth)
     routes.userRoutes(authenticatedRouter)
-    routes.blogRoutes(authenticatedRouter)
     routes.studentRoutes(authenticatedRouter)
-    routes.groupRoutes(authenticatedRouter)
-    routes.postRoutes(authenticatedRouter)
+    routes.blogRoutes(authenticatedRouter,messenger)
+    routes.groupRoutes(authenticatedRouter,messenger)
+    routes.postRoutes(authenticatedRouter,messenger)
     mainRouter.use('/auth', authenticatedRouter)
     routes.fileRoutes(mainRouter)
     routes.authRoutes(mainRouter)

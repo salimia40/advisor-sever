@@ -32,8 +32,6 @@ module.exports = (router) => {
 
     router.route('/advisor')
         .get(async (req,res)=> {
-            console.log('called')
-            console.log(req.user)
             if(req.user.role == 'student') {
                 let advisor = await User.findById(req.user.advisorId)
                 return res.json(advisor)

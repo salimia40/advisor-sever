@@ -4,7 +4,7 @@ const Group = require('../../models/group'),
     GroupComment = require('../../models/gComment'),
     Protocol = require('../../io/protocol')
 
-module.exports = (router) => {
+module.exports = (router,messenger) => {
     router.route('/group')
         .get(async (req, res) => {
             let members = await Member.find({
@@ -45,6 +45,7 @@ module.exports = (router) => {
                 userId: req.user.id
             })
             member.save().exec()
+            messenger.recordEvent(messenger.groupEvents.created, group.id, req.user.id, null)
             res.status(201).json(group)
             // todo created event
         })
@@ -60,6 +61,7 @@ module.exports = (router) => {
             if (owner == undefined) return res.sendStatus(401)
             Object.assign(group, body)
             group = await group.save()
+            messenger.recordEvent(messenger.groupEvents.updated, group.id, req.user.id, null)
             res.status(202).json(group)
             // todo update event
         })
@@ -80,9 +82,9 @@ module.exports = (router) => {
                 groupId: data.gid
             }).exec();
 
+            messenger.emit(MessageCodes.groupDeletion, req.user.id, groupId)
+
             res.sendStatus(200)
-            // todo notify deleted members
-            // todo delete comments
         })
 
     router.route('/group/event')
@@ -116,6 +118,7 @@ module.exports = (router) => {
                 groupId,
                 userId: req.user.id
             }).exec()
+            messenger.recordEvent(messenger.groupEvents.left, group.id, req.user.id, null)
             res.sendStatus(200)
             // todo left event  
         })
@@ -145,11 +148,10 @@ module.exports = (router) => {
             res.json(member)
 
 
-            // if(adding)
-            // todo added event
-            // send member for added 
-            // else
-            // todo joined event
+            if(adding) 
+            messenger.recordEvent(messenger.groupEvents.added, group.id, userId, null)
+            else
+            messenger.recordEvent(messenger.groupEvents.created, group.id, req.user.id, userId)
         })
 
     router.route('/group/remove')
@@ -167,6 +169,13 @@ module.exports = (router) => {
                 groupId,
                 userId
             }).exec()
+            messenger.emit(messenger.MessageCodes.NOTIFICATION, data.uid, {
+                type: NotificationCodes.REMOVED,
+                userId: req.user.id,
+                groupId: m.groupId
+            })
+            messenger.recordEvent(messenger.groupEvents.created, group.id, req.user.id, userId)
+
 
             res.sendStatus(200)
         })

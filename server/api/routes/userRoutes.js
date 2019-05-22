@@ -75,12 +75,4 @@ module.exports = (router) => {
                 res.status(401).json(error)
             }
         })
-
-    // router.route('/advisor')
-    //     .get(async (req, res) => {
-    //         if (req.user.role != 'advisor') return res.sendStatus(400)
-    //         var advisor = await User.findById(req.user.advisorId).exec()
-    //         res.json(advisor)
-    //     })
-    
 }
