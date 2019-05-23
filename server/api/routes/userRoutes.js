@@ -29,7 +29,6 @@ module.exports = (router) => {
                 return res.json(user)
             }
 
-
             let email = req.body.email,
                 name = req.body.name,
                 bio = req.body.bio,

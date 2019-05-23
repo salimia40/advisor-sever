@@ -127,7 +127,7 @@ module.exports = (clientManager) => {
         else return queueNotification(userId, notification);
     })
 
-    messenger.on(MessageCodes.groupDeletion, async (ownerId, groupId) => {
+    messenger.on(messenger.MessageCodes.groupDeletion, async (ownerId, groupId) => {
         let ms = await Member.find({
             groupId: groupId
         })

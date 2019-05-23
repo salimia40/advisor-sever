@@ -58,37 +58,53 @@ Open `server/config/config.json` then edit it with your settings. You will need:
 all content should be urlencoded
 endpoints sighned with @AUTH should have token header for autentication 
 
-upload any file
-    @POST - /api/upload
-    @BODY file
+    upload any file
+        @POST - /api/upload
+        @BODY file
+    
+    download file knowing its name
+        @GET - /api/files/:name
+    
+    confirm user's email address
+        @GET - /email/:userId/:code     
 
-download file knowing its name
-    @GET - /api/files/:name
+    login and get api tocken
+        @POST - /api/login
+        @BODY @REQUIRED username
+        @BODY @REQUIRED password
 
-confirm user's email address
-    @GET - /email/:userId/:code     
+    register and get api tocken
+        @POST - /api/register
+        @BODY @REQUIRED username
+        @BODY @REQUIRED password
+        @BODY @REQUIRED name
+        @BODY @REQUIRED email
+        @BODY @REQUIRED role
+        @BODY advisorId
 
-login and get api tocken
-    @POST - /api/login
-    @BODY username
-    @BODY password
+    @AUTH get current user info
+        @GET - /api/user
+    
+    @AUTH get spsific user info
+        @POST - /api/user
+        @BODY @REQUIRED uid
+    
+    @AUTH find users
+        @POST - /api/user
+        @BODY @REQUIRED query
+    
+    @AUTH update current user info
+        @POST - /api/user
+        @BODY email
+        @BODY name
+        @BODY bio
+        @BODY avatarSmall
+        @BODY avatarLarge
 
-register and get api tocken
-    @POST - /api/register
-    @BODY username
-    @BODY password
-    @BODY name
-    @BODY email
-    @BODY role
-    @BODY advisorId
-
-get current user info
-    @GET - /api/user
-
-get spsific user info
-    @POST - /api/user
-    @BODY uid
-
+    @AUTH change password
+        @POST - /api/user/password
+        @BODY @REQUIRED password
+        @BODY @REQUIRED passwordNew
     
 
 

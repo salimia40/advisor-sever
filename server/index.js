@@ -5,7 +5,8 @@ const
     server = http.Server(app),
     port = require('./config').port,
     api = require('./api'),
-    io = require('./io')
+    io = require('./io'),
+    ClientManager = require('./io/clientManager')
 
 const clientManager = new ClientManager();
 const messenger = require('./io/messenger')(clientManager)

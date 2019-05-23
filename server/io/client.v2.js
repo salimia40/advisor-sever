@@ -29,7 +29,6 @@ module.exports = (io, messenger, clientManager) => {
 }
 
 const loginClient = async (token) => {
-    let token = client.handshake.query.token;
     if (token == undefined) return undefined
     let auth = jwt.decode(token)
     // checking heath of token
