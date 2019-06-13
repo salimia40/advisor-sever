@@ -1,5 +1,9 @@
-const Student = require('../../models/student'),
-User = require('../../models/user')
+const User = require('../../models/user'),
+    Student = require('../../models/student'),
+    uuid = require('uuid'),
+    Queue = require('../../models/queue'),
+    Protocol = require('../../io/protocol'),
+    mailer = require('../../mail')()
 
 module.exports = (router) => {
     router.route('/student')
@@ -38,6 +42,7 @@ module.exports = (router) => {
             }
             res.json(req.user)
         })
+
 
     router.route('/student/add')
         .post(async (req,res) => {
@@ -84,7 +89,6 @@ module.exports = (router) => {
         
             res.status(200).json({
                 success: true,
-                // token,
                 message: 'user created'
             });
             
@@ -93,4 +97,49 @@ module.exports = (router) => {
             res.sendStatus(501)    
         }
         })
+
+
+            // helper methodes
+
+    /**
+     * creates a blank queue for user
+     * 
+     * @param {User} user 
+     * @requires user.id
+     */
+    function createQueue(user) {
+        var queue = new Queue({
+            userId: user.id
+        });
+        queue.save();
+    }
+
+    /**
+     * ckecks if user is student
+     * @param {User} user 
+     * @requires user.role
+     * @returns {Boolean}
+     */
+    function isStudent(user) {
+        return user.role === Protocol.UserTypes.student
+    }
+
+    /**
+     * creates an student doc for user
+     * @param {User} user 
+     * @emits client#STUDENT_GET
+     * 
+     */
+    function createStudent(user) {
+        var student = new Student();
+        student.username = user.username;
+        student.userId = user._id;
+        student.advisorId = user.advisorId;
+        student.save().then(st => {});
+    }
+
+    function sendConfirmEmail(user) {
+        mailer.cofirmEmail(user.email.email, user.name, user.id, user.email.confirmCode)
+    }
+
 }

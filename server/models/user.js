@@ -107,24 +107,31 @@ userSchema.methods.getAdvisor = function () {
     })
 };
 
-userSchema.query.students = function(userId){
-    return this.where(advisorId,userId)
+userSchema.query.students = function (userId) {
+    return this.where(advisorId, userId)
 }
 
 userSchema.statics.changePassword = function (user, password, newPassword, callback) {
-    if(callback == undefined) return new Promise((res,rej) => {
+    if (callback == undefined) return new Promise((res, rej) => {
         bcrypt.compare(password, user.password).then(isMatch => {
             if (isMatch) {
                 bcrypt.hash(newPassword, 10).then(hash => {
                     user.password = hash;
                     user.save(function (err, newUser) {
-                        if (err) return rej(
-                            'failed to change password'
-                        );
-                        else return res('password changed successfully');
+                        if (err) return res({
+                            message : 'failed to change password',
+                            success : false
+                        });
+                        else return res({
+                            message : 'password changed successfully',
+                            success : true
+                        });
                     });
                 })
-            } else return rej('incorrect password');
+            } else return res({
+                message : 'incorrect password',
+                success : false
+            });
         })
     })
     bcrypt.compare(password, user.password).then(isMatch => {
@@ -138,7 +145,6 @@ userSchema.statics.changePassword = function (user, password, newPassword, callb
                     });
                     else return callback({
                         success: true,
-                        user: newUser,
                         message: 'password changed successfully'
                     });
                 });

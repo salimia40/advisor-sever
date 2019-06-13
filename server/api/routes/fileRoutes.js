@@ -31,6 +31,13 @@ module.exports = (router) => {
             return res.status(400).send('No files were uploaded.');
         }
         let file = req.files.file;
+        if(file == undefined) {
+            res.json({
+                success: false,
+                name: null
+            })
+            return
+        }
         let name = Name(file)
         // storage.saveFileByData(file,name);
         log.info(`new file renamed to:      ${name}`);

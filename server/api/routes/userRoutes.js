@@ -1,7 +1,8 @@
 const
     uuid = require('uuid'),
     User = require('../../models/user'),
-    mailer = require('../../mail')()
+    mailer = require('../../mail')(),
+    jwt = require('../../jwt')()
 
 module.exports = (router) => {
     router.route('/user')
@@ -51,6 +52,7 @@ module.exports = (router) => {
                 user.name = name
             }
             if (bio != undefined) user.bio = bio
+            // delete user.avatar
             if (avatarSmall != undefined && avatarLarge != undefined) user.avatar = {
                 large: avatarLarge,
                 small: avatarSmall
@@ -69,9 +71,18 @@ module.exports = (router) => {
             if (password == undefined || passwordNew == undefined) return res.sendStatus(400)
             try {
                 let response = await User.changePassword(req.user, password, passwordNew)
+                let auth = {
+                    id: req.user.id,
+                    passwordNew
+                }
+                let token = jwt.encode(auth)
+
+                response.token = token
+
                 res.status(200).json(response)
             } catch (error) {
                 res.status(401).json(error)
+                
             }
         })
 }

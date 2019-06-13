@@ -8,6 +8,7 @@ module.exports = async function (req, res, next) {
     let auth = jwt.decode(token)
     if(auth.id == undefined || auth.password == undefined) return res.sendStatus(400)
     var user = await User.findById(auth.id)
+    if(user == undefined) return res.sendStatus(401)
     var isMatch = await user.checkPassword(auth.password)
     if (isMatch) {
         req.user = user

@@ -78,7 +78,8 @@ module.exports = (router,messenger) => {
             let comment = await Comment.findById(req.body.cid)
             if (req.user.id != comment.userId) return res.sendStatus(401)
             comment.deleted = true
-            res.sendStatus(200)
+            comment = await comment.save()
+            res.json(comment)
             // todo call messenger
         })
 }

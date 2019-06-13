@@ -6,5 +6,4 @@ tmp/*
 logs.log
 Procfile
 .idea
-config.json
 temp

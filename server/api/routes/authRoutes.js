@@ -14,6 +14,9 @@ module.exports = (router) => {
             let username = req.body.username,
                 password = req.body.password
 
+                console.log(username)
+                console.log(password)
+
             try {
                 if (!(username && password)) return res.sendStatus(400)
                 let user = await User.findByUsername(username)

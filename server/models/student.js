@@ -36,7 +36,7 @@ const studentSchema = new Schema({
         has: {type: Boolean, default: false},
         reason: String
     },
-    Military: String,
+    military: String,
     job: {
         isOccupied: {type: Boolean, default: false},
         occupation: String,
